@@ -1,4 +1,5 @@
 # OUTPUTLOCATION: INPUT1, INPUT2, INPUT3
 greetings/message: good morning goose, goose deliver
 greetings/morning: good morning, morning
-help: goose help
+help(): goose help
+sendMessage(): send message

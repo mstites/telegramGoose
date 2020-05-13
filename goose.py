@@ -22,7 +22,7 @@
 # could select random message by having multiple reply files for each one (ending 1-3)
 
 # inefficient to reconsttruct key everytime, though this does allow live updates
-
+# daily message -> use [] to embed a link to an online image to get in
 # delay message
 import sys
 import time
