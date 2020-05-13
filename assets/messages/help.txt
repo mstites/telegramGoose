@@ -12,6 +12,8 @@ Below is the full list of commands. There are generally two commands for every f
 
 "I am down" / "goose support" - Goose will give positivity
 
+"Play with me" / "goose play" - Goose will play
+
 "goose features" - see currently active feature
 
 "goose FEATURE on/off"

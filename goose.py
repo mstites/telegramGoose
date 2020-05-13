@@ -20,27 +20,92 @@
 # send maeve a message or file
 import sys
 import time
+import string
+import pprint as pp
 import telepot
 from telepot.loop import MessageLoop
-import pprint as pp
 
-# create bot
-goose = telepot.Bot('***REMOVED***')
-goose.getMe()
+################################################
 
+# Goose specific functions
+def constructKey():
+    """Construct the key for input to message to return"""
+    morning = ['goodmorninggoose','goosedeliver','goodmorning','morning']
 
-def handle(msg):
-    """Handles message sent to goose bot and replies."""
-    content_type, chat_type, chat_id = telepot.glance(msg)
-    print(content_type, chat_type, chat_id)
+    key = {}
+    for input in morning:
+        key[input] = 'morning'
+    return key
 
-    if content_type == 'text':
-        if
-        goose.sendMessage(chat_id, msg['text'])
+    
+def identifyCall(text):
+    """Identify the function call made by the user"""
+    key = {
+    'goodmorninggoose':'morning',
+    'goosedeliver':'morning',
+    'goodmorning':'morning',
 
-MessageLoop(goose, handle).run_as_thread()
-print ('Listening ...')
+    'morning': ['goodmorninggoose','goosedeliver','goodmorning','morning']
+    }
+    if text in key['morning']:
+        return 'morningMessage'
+    else:
+        return 'unknownCommand'
 
-# Keep the program running.
-while 1:
-    time.sleep(10)
+def replyMessage(text):
+    """Selects the appropriate reply message and returns as a string"""
+    request = identifyCall(text)
+
+    if text in key['morning']:
+        reply = morning
+    else:
+        reply = "I don't understand what you are saying. \n Say 'Goose Help' for a list of things I can understand"
+    return reply
+
+################################################
+
+# Generic bot functions
+def createBot(token):
+    """Create bot with token string"""
+    bot = telepot.Bot(token)
+    print(bot.getMe())
+    return bot
+
+def cleanInput(text):
+    """Cleans user input
+    >>> cleanInput('GoOd moRnIng GOOSE')
+    'goodmorninggoose'
+    >>> cleanInput('good-morning goose!')
+    'goodmorninggoose'
+    >>> cleanInput('gOOD@@ mORniNg-?goo87se.,.')
+    'goodmorninggoose'"""
+
+    toStrip = string.punctuation + string.digits + ' '
+    cleanText = text.translate(str.maketrans('', '', toStrip))
+    return cleanText.lower()
+
+def loop(bot):
+    """Starts the program"""
+    def handle(msg):
+        """Handles message sent to goose bot."""
+        content_type, chat_type, chat_id = telepot.glance(msg)
+        print(content_type, chat_type, chat_id)
+        if content_type == 'text':
+            text = cleanInput(msg['text'])
+            reply = replyMessage(text)
+            bot.sendMessage(chat_id, reply)
+
+    MessageLoop(bot, handle).run_as_thread()
+    print ('Listening ...')
+    while 1: # Keep the program running.
+        time.sleep(10)
+
+def start():
+    """Starts the program"""
+    goose = createBot('***REMOVED***')
+    loop(goose)
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+    start()
