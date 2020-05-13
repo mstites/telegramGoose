@@ -2,8 +2,6 @@
 # Created by https://www.gitignore.io/api/linux,python,jupyternotebooks
 # Edit at https://www.gitignore.io/?templates=linux,python,jupyternotebooks
 
-jenni.conf
-
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
