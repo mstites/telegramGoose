@@ -1,0 +1,17 @@
+Help Message
+
+Commands:
+
+Below is the full list of commands. There are generally two commands for every function, with the first one being a more organic one, and the second following a consistent "Goose COMMAND" format.
+
+"Goose help" - see this message
+
+"Good morning Goose" / "goose deliver" - receive messages
+
+"Pet Goose*" / "goose pet" - Goose will show affection
+
+"I am down" / "goose support" - Goose will give positivity
+
+"goose features" - see currently active feature
+
+"goose FEATURE on/off"
