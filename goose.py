@@ -26,56 +26,11 @@
 # delay message
 import sys
 import time
-import string
 import pprint as pp
 import telepot
 from telepot.loop import MessageLoop
+import string
 
-# global replyKey
-################################################
-
-# Message send functions
-def loadKey (keyLocation):
-    """Load key from txt file"""
-    lines = loadMessage(keyLocation).splitlines()
-    listKey = []
-    for line in lines:
-        if line.startswith("#"):
-            continue # ignore commented lines
-        else:
-            line = line.replace(":", ",") # only one seperator type
-            line = line.split(",")
-            listKey.append(line)
-    return listKey
-
-def loadKeyDict(keyLocation):
-    """Construct the key dictionary"""
-    listKey = loadKey(keyLocation)
-    dictKey = {}
-    for ky in listKey:
-        output = ky[0] # eventual reply to message, no cleaning
-        for item in ky[1:]:
-            item = cleanInput(item)
-            dictKey[item] = output
-    return dictKey
-
-def loadMessage(msgName):
-    """Load message from assets and return as string"""
-    location = "assets/messages/" + msgName + ".txt"
-    with open(location, "r") as file:
-        msg = file.read()
-    return msg
-
-def loadReply(text):
-    """Selects the appropriate message and returns as a string"""
-    request = identifyCall(text)
-    try:
-        reply = loadMessage("replies/" + request)
-    except (TypeError, AttributeError):
-        reply = loadMessage("replies/" + "unknownCommand")
-    return reply
-
-# Message recieve functions
 def cleanInput(text):
     """Cleans user input
     >>> cleanInput("GoOd moRnIng GOOSE")
@@ -89,45 +44,87 @@ def cleanInput(text):
     cleanText = text.translate(str.maketrans("", "", toStrip))
     return cleanText.lower()
 
-def identifyCall(text):
-    """Identify the function call made by the user"""
-    print(replyKey)
-    return replyKey.get(text)
+def loadMessage(msgName):
+    """Load message from assets and return as string"""
+    location = "assets/messages/" + msgName + ".txt"
+    with open(location, "r") as file:
+        msg = file.read()
+    return msg
 
-################################################
+class Message:
+    def __init__(self, bot, keyLocation, msgDir):
+        """keyLocation: string of the key location"""
+        self.key = self.loadKeyDict(keyLocation)
+        self.bot = bot
+        self.msgDir = msgDir # default msgDir
 
-# Generic bot functions
-def createBot(token):
-    """Create bot with token string"""
-    bot = telepot.Bot(token)
-    print(bot.getMe())
-    return bot
+    def loadKey (self, keyLocation):
+        """Load key from txt file"""
+        lines = loadMessage(keyLocation).splitlines()
+        listKey = []
+        for line in lines:
+            if line.startswith("#"):
+                continue # ignore commented lines
+            else:
+                line = line.replace(":", ",") # only one seperator type
+                line = line.split(",")
+                listKey.append(line)
+        return listKey
 
-def loop(bot):
-    """Starts the program"""
+    def loadKeyDict(self, keyLocation):
+        """Construct the key dictionary"""
+        listKey = self.loadKey(keyLocation)
+        dictKey = {}
+        for ky in listKey:
+            output = ky[0] # eventual reply to message, no cleaning
+            for item in ky[1:]:
+                item = cleanInput(item)
+                dictKey[item] = output
+        return dictKey
 
-    def handle(msg):
+    def loadMsg(self, text):
+        """Selects the appropriate message and returns as a string"""
+        request = self.key.get(text)
+        try:
+            msg = loadMessage(self.msgDir + request)
+        except (TypeError, AttributeError):
+            msg = loadMessage("replies/unknownCommand")
+        return msg
+
+    def send(self, chat_id, text):
+        """Sends message"""
+        msg = self.loadMsg(text)
+        self.bot.sendMessage(chat_id, msg)
+
+class Bot:
+    def __init__(self, token, replyLoc, initLoc):
+        """Initialize and create bot.
+        token: token value for controlling bot
+        replyLoc: string location of input reply parings
+        initLoc: string location of bot initial messages based on input
+        """
+        self.bot = telepot.Bot(token)
+        self.reply = Message(self.bot, replyLoc, 'replies/')
+
+    def __str__(self):
+        return self.bot.getMe()
+
+    def handle(self, msg):
         """Handles message sent to goose bot."""
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id)
         if content_type == "text":
             text = cleanInput(msg["text"])
-            reply = loadReply(text)
-            bot.sendMessage(chat_id, reply)
+            self.reply.send(chat_id, text)
 
-    MessageLoop(bot, handle).run_as_thread()
-    print ("Listening ...")
-    while 1: # Keep the program running.
-        time.sleep(10)
-
-def start():
-    """Starts the program"""
-    global replyKey
-    replyKey = loadKeyDict("replies/~key")
-    goose = createBot("***REMOVED***")
-    loop(goose)
+    def listen(self):
+        """Starts the program to listen"""
+        MessageLoop(self.bot, self.handle).run_as_thread()
+        print ("Listening ...")
+        while 1: # Keep the program running.
+            time.sleep(10)
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-    start()
+    token = "***REMOVED***"
+    goose = Bot(token, "replies/~key", "~key")
+    goose.listen()
