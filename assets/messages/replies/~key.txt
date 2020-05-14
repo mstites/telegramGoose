@@ -1,5 +1,9 @@
 # OUTPUTLOCATION: INPUT1, INPUT2, INPUT3
-# greetings/message(): good morning goose, goose deliver
+# & is a random reply
+deliverMessage(): good morning goose, goose deliver
 greetings/morning: good morning, morning
-# help(): goose help
+help: goose help, help
 # sendMessage(): send message
+# catPhoto(): send cat photo, something cute
+# goosePhoto(): goose attack, goose cuteness
+greetings/hello&: hello, hi

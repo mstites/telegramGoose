@@ -1,0 +1,7 @@
+# Track events and what should happen at different points
+# TYPE, VALUE, ACTION
+# add a similar file in user files for reminders8
+# Types: time, messCount
+# Values: 24 hour time 0000, integer
+time, 0800, dailyMess()
+messCount, 1, init/intro

@@ -26,6 +26,20 @@
 # delay message
 # goodbye
 
+# way to get name and use that in addition to ID, that way for sending messages you can see names
+# could also just have property for user on who to send messages to
+
+
+# Reminders:
+# Dictionary with keys being reminder time and values being message to send
+# Have another dictionary with keys being date and values being dictionary with times for that days
+# Store in user/#/reminders, have a file caled time?
+
+# similar type but with messages
+
+# cute aggression generation, random times for honks
+
+import random
 import sys
 import time
 import pprint as pp
@@ -70,9 +84,11 @@ class User:
         self.id = str(id)
         self.loc = "users/"
         self.load()
+
     def __str__(self):
         # return user id, number of messages, stored messages ,etc
-        pass
+        return str((self.id, self.msgCount))
+
     def load(self):
         # toLoad = ["msgCount", ...]
         # for...
@@ -91,6 +107,25 @@ class User:
     def write(self):
         location = str(self.loc) + str(self.id) + "/msgCount"
         wfile(location, self.msgCount)
+
+class Event:
+    # should I be sending messages from this class?
+    def __init__(self):
+        # load events from file
+        # should probably inherit from messages
+        pass
+
+    def checkTime(self):
+        # check time events
+        pass
+
+    def checkMess(self):
+        # check message count events
+        pass
+
+    def checkEvents(self):
+        # run the checks
+        pass
 
 class Message:
     def __init__(self, bot, keyLocation, msgDir):
@@ -130,20 +165,59 @@ class Message:
             msg = file.read()
         return msg
 
+    def action(self, request):
+        """Check if request is action"""
+        print(type(request))
+        if (("&" in request) or ("()" in request)):
+            return True
+        else:
+            return False
+
     def loadMsg(self, text):
         """Selects the appropriate message and returns as a string"""
         request = self.key.get(text)
-        try:
-            loc = ""
-            msg = self.open(self.msgDir + request)
-        except (TypeError, AttributeError):
-            msg = self.open("replies/unknownCommand")
-        return msg
+        if request is None:
+            return self.open("replies/unknownCommand")
+        elif self.action(request): #
+            action = Action(request)
+            return action.process()
+        else:
+            return self.open(self.msgDir + request)
 
     def send(self, chat_id, text):
         """Sends message"""
         msg = self.loadMsg(text)
         self.bot.sendMessage(chat_id, msg)
+
+class Action(Message):
+    """parse action messages"""
+    def __init__(self, request):
+        self.request = request
+
+    def randSel(self):
+        """Select random message in request category"""
+        clean = self.request[:-1] # remove rand indicator
+        dir = 'assets/messages/replies/'+clean
+        messages = os.listdir(dir)
+        sel = random.randrange(len(messages))
+        selDir = dir + '/' + str(sel) + '.txt'
+        return ofile(selDir)
+
+    def deliverDaily(self):
+        """Open daily message"""
+        # if no daily
+        return "Deliver daily"
+        # intro message for every single message
+
+    def process(self):
+        """Determine action type and run appropriate function"""
+        if "&" in self.request:
+            self.msg = self.randSel()
+        elif self.request == "deliverMessage()":
+            self.msg = self.deliverDaily()
+        else:
+            self.msg = "ERROR"
+        return self.msg
 
 class Bot:
     def __init__(self, token, replyLoc, initLoc):
@@ -173,9 +247,10 @@ class Bot:
         """Handles message sent to goose bot."""
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id)
-        
+
         if chat_id in self.users:
             self.users[chat_id].uChatCount()
+            print(self.users[chat_id])
         else: # add the user and create user object
             user = User(chat_id)
             self.users[chat_id] = user
