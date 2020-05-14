@@ -24,13 +24,15 @@
 # inefficient to reconsttruct key everytime, though this does allow live updates
 # daily message -> use [] to embed a link to an online image to get in
 # delay message
+# goodbye
+
 import sys
 import time
 import pprint as pp
 import telepot
 from telepot.loop import MessageLoop
 import string
-from os import listdir
+import os
 
 def ofile(location):
     with open(location, "r") as file:
@@ -38,9 +40,13 @@ def ofile(location):
 
 def wfile(location, data):
     """Write file"""
-    with open(location, "w") as file:
-        file.write(data)
-        file.flush()
+    # with open(location, "w") as file:
+    #     file.write(data)
+    #     file.flush()
+    file = open(location, "w")
+    file.write(str(data))
+    file.flush()
+    file.close()
 
 def ufile(location, new):
     """Update file, add a new line"""
@@ -61,7 +67,7 @@ def cleanInput(text):
 
 class User:
     def __init__(self, id):
-        self.id = id
+        self.id = str(id)
         self.loc = "users/"
         self.load()
     def __str__(self):
@@ -70,21 +76,21 @@ class User:
     def load(self):
         # toLoad = ["msgCount", ...]
         # for...
+        if not os.path.exists(self.loc + self.id):
+            os.makedirs(self.loc + self.id)
         try:
-            self.msgConut = ofile(self.loc + self.id + "/msgCount")
+            self.msgCount = ofile(self.loc + self.id + "/msgCount")
         except FileNotFoundError:
             self.msgCount = 0
             self.write()
 
-        # self.chatCount =
-        # self.Reminders =
-
     def uChatCount(self):
-        self.msgCount += 1
+        self.msgCount = int(self.msgCount) + 1
+        self.write() # should not do this all the time eventually?
 
     def write(self):
-        wfile(self.loc + self.id + "/msgCount", str(self.msgCount))
-
+        location = str(self.loc) + str(self.id) + "/msgCount"
+        wfile(location, self.msgCount)
 
 class Message:
     def __init__(self, bot, keyLocation, msgDir):
@@ -149,7 +155,7 @@ class Bot:
         self.bot = telepot.Bot(token)
         self.reply = Message(self.bot, replyLoc, 'replies/')
         self.initial = Message(self.bot, initLoc, 'init/')
-        self.users = []
+        self.users = {} # id key, user val
         self.loadUsers()
         # self.users = []
 
@@ -158,23 +164,22 @@ class Bot:
 
     def loadUsers(self):
         """Load all known users"""
-        # read ids from file
-        # create object for each and put in users list
-        userIds = listdir('users')
+        userIds = os.listdir('users')
         for id in userIds:
-            print(type(id))
             user = User(id)
-        print(userIds)
-        pass
+            self.users[int(id)] = user
 
     def handle(self, msg):
         """Handles message sent to goose bot."""
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id)
-        if chat_id in users:
-            pass
+        
+        if chat_id in self.users:
+            self.users[chat_id].uChatCount()
         else: # add the user and create user object
-            pass
+            user = User(chat_id)
+            self.users[chat_id] = user
+
         if content_type == "text":
             text = cleanInput(msg["text"])
             self.reply.send(chat_id, text)
