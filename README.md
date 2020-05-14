@@ -10,6 +10,8 @@ A bot to keep me busy during quarantine and give my girlfriend and I some laughs
 
 Make requirements.txt
 
+Way to check if selected message contains () - a function
+
 
 Trans support bot:
 "Misgendered by professors"

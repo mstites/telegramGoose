@@ -30,6 +30,21 @@ import pprint as pp
 import telepot
 from telepot.loop import MessageLoop
 import string
+from os import listdir
+
+def ofile(location):
+    with open(location, "r") as file:
+        return file.read()
+
+def wfile(location, data):
+    """Write file"""
+    with open(location, "w") as file:
+        file.write(data)
+        file.flush()
+
+def ufile(location, new):
+    """Update file, add a new line"""
+    pass
 
 def cleanInput(text):
     """Cleans user input
@@ -44,12 +59,32 @@ def cleanInput(text):
     cleanText = text.translate(str.maketrans("", "", toStrip))
     return cleanText.lower()
 
-def loadMessage(msgName):
-    """Load message from assets and return as string"""
-    location = "assets/messages/" + msgName + ".txt"
-    with open(location, "r") as file:
-        msg = file.read()
-    return msg
+class User:
+    def __init__(self, id):
+        self.id = id
+        self.loc = "users/"
+        self.load()
+    def __str__(self):
+        # return user id, number of messages, stored messages ,etc
+        pass
+    def load(self):
+        # toLoad = ["msgCount", ...]
+        # for...
+        try:
+            self.msgConut = ofile(self.loc + self.id + "/msgCount")
+        except FileNotFoundError:
+            self.msgCount = 0
+            self.write()
+
+        # self.chatCount =
+        # self.Reminders =
+
+    def uChatCount(self):
+        self.msgCount += 1
+
+    def write(self):
+        wfile(self.loc + self.id + "/msgCount", str(self.msgCount))
+
 
 class Message:
     def __init__(self, bot, keyLocation, msgDir):
@@ -60,7 +95,7 @@ class Message:
 
     def loadKey (self, keyLocation):
         """Load key from txt file"""
-        lines = loadMessage(keyLocation).splitlines()
+        lines = self.open(keyLocation).splitlines()
         listKey = []
         for line in lines:
             if line.startswith("#"):
@@ -82,13 +117,21 @@ class Message:
                 dictKey[item] = output
         return dictKey
 
+    def open(self, msgName):
+        """Load message from assets and return as string"""
+        location = "assets/messages/" + msgName + ".txt"
+        with open(location, "r") as file:
+            msg = file.read()
+        return msg
+
     def loadMsg(self, text):
         """Selects the appropriate message and returns as a string"""
         request = self.key.get(text)
         try:
-            msg = loadMessage(self.msgDir + request)
+            loc = ""
+            msg = self.open(self.msgDir + request)
         except (TypeError, AttributeError):
-            msg = loadMessage("replies/unknownCommand")
+            msg = self.open("replies/unknownCommand")
         return msg
 
     def send(self, chat_id, text):
@@ -105,14 +148,33 @@ class Bot:
         """
         self.bot = telepot.Bot(token)
         self.reply = Message(self.bot, replyLoc, 'replies/')
+        self.initial = Message(self.bot, initLoc, 'init/')
+        self.users = []
+        self.loadUsers()
+        # self.users = []
 
     def __str__(self):
         return self.bot.getMe()
+
+    def loadUsers(self):
+        """Load all known users"""
+        # read ids from file
+        # create object for each and put in users list
+        userIds = listdir('users')
+        for id in userIds:
+            print(type(id))
+            user = User(id)
+        print(userIds)
+        pass
 
     def handle(self, msg):
         """Handles message sent to goose bot."""
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id)
+        if chat_id in users:
+            pass
+        else: # add the user and create user object
+            pass
         if content_type == "text":
             text = cleanInput(msg["text"])
             self.reply.send(chat_id, text)
@@ -126,5 +188,5 @@ class Bot:
 
 if __name__ == "__main__":
     token = "***REMOVED***"
-    goose = Bot(token, "replies/~key", "~key")
+    goose = Bot(token, "replies/~key", "init/~key")
     goose.listen()
