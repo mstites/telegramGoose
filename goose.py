@@ -8,6 +8,7 @@ import string
 import os
 import datetime as dt
 import pandas as pd
+import state as st
 
 def ofile(location):
     with open(location, "r") as file:
@@ -95,22 +96,6 @@ class User:
         location = str(self.loc) + str(self.id) + "/msgCount"
         wfile(location, self.msgCount)
 
-class Event:
-    def __init__(self, time, userID, action, content):
-        """
-        time: time to send
-        userID: user to send to
-        action: type
-        content: msg
-        """
-        self.time = time
-        self.user = userID
-        self.action = action
-        self.content = content
-
-    def __str__(self):
-        return str(self.status + '/' + self.time + '/' + self.user + '/' + self.action)
-
 class EventHandler:
     """Handle events"""
     def __init__(self, bot):
@@ -121,7 +106,6 @@ class EventHandler:
         """Remove event from dataframe"""
         self.df = self.df.drop(0)
         self.df = self.df.reset_index()
-        print(self.df)
 
     def runEvent(self, event):
         """Run an event"""
@@ -131,9 +115,9 @@ class EventHandler:
     def saveToDisk(self):
         self.df.to_pickle('assets/events.pkl')
 
-    def addEvent(self, event):
+    def addTimeEvent(self, time, target, action, content):
         """Add event to event dataframe"""
-        row = {'time':event.time, 'user':event.user, 'action':event.action, 'content':event.content}
+        row = {'time':time, 'user':target, 'action':action, 'content':content}
         self.df = self.df.append(row, ignore_index=True)
         self.df = self.df.sort_values(by='time')
         self.df = self.df.reset_index()
@@ -153,11 +137,10 @@ class EventHandler:
                 self.runEvent(nextEvent)
                 self.remove(nextEvent)
 
-class Reply:
+class Message:
     def __init__(self, bot, key, msgDir, userID):
         """key: dict of the key """
         self.key = key #self.loadKeyDict(keyLocation)
-        self.bot = bot
         self.userID = userID
         self.msgDir = msgDir # default msgDir
 
@@ -179,61 +162,47 @@ class Reply:
         """Selects the appropriate message and returns as a string"""
         request = self.key.get(text)
         if request is None:
-            return self.open("replies/unknownCommand")
+            return self.open("replies/unknownCommand"), st.default
         elif self.action(request): #
             action = Action(request, self.userID)
             return action.process()
         else:
-            return self.open(self.msgDir + request)
+            return self.open(self.msgDir + request), st.default
 
-    def send(self, text):
-        """Sends message"""
-        msg = self.loadMsg(text)
-        self.bot.sendMessage(self.userID, msg)
-
-class Action(Reply):
+class Message(Reply):
     """Parse action messages"""
-    def __init__(self, request, userID):
+    def __init__(self, request, userID, msgDir):
         """request: requset starting
         userID: id of messege originator"""
         self.request = request
         self.userID = userID
+        self.msgDir = 'assets/messages/' + msgDir
 
     def randSel(self):
         """Select random message in request category"""
         clean = self.request[:-1] # remove rand indicator
-        dir = 'assets/messages/replies/'+clean
+        dir = self.msgDir+clean
         messages = os.listdir(dir)
         sel = random.randrange(len(messages))
         selDir = dir + '/' + str(sel)
         return ofile(selDir)
 
     def sendMessage(self):
-        """Send message"""
-        pass
-
-    # REDO?
-    def deliverDaily(self):
-        """Open daily messages - mailbox"""
-        global date
-        uDir = 'users/' + str(self.userID) + '/mailbox/'
-        date = cleanInput(str(date), "(), ")
-        dir = uDir + date
-        if os.path.exists(dir):
-            msg = ofile(uDir + date)
-            return '*HONK* Here are your messages:' + msg
-        else:
-            return "No new mail today"
+        msg =ofile(self.msgDir)
+        return msg
 
     def process(self):
         """Determine action type and run appropriate function"""
         if "&" in self.request:
             self.msg = self.randSel()
-        elif self.request == "deliverMessage()":
-            self.msg = self.deliverDaily()
+            self.state = st.default
+        elif self.request == "sendMessage()":
+            self.msg = self.sendDaily()
+            self.state = st.sendMessage
         else:
             self.msg = "ERROR"
-        return self.msg
+            self.state = st.default
+        return self.msg, self.state
 
 class Bot:
     def __init__(self, token, replyLoc, initLoc):
@@ -247,6 +216,7 @@ class Bot:
         self.replyDir = 'replies/'
         self.initDir = 'init/'
         self.users = {} # id key, user val
+        self.state = {} # state of each users session
         self.loadUsers()
         self.events = EventHandler(self.bot)
 
@@ -259,6 +229,7 @@ class Bot:
         for id in userIds:
             user = User(id)
             self.users[int(id)] = user
+            self.state[int(id)] = st.default
 
     def handle(self, msg):
         """Handles message sent to goose bot."""
@@ -268,14 +239,39 @@ class Bot:
         if chat_id in self.users:
             self.users[chat_id].uChatCount()
             print(self.users[chat_id])
+
         else: # add the user and create user object
             user = User(chat_id)
             self.users[chat_id] = user
 
         if content_type == "text":
-            text = cleanInput(msg["text"])
-            reply = Reply(self.bot, self.replyKey, self.replyDir, chat_id)
-            reply.send(text)
+            state = self.state[chat_id]
+
+            if state is st.default:
+                text = cleanInput(msg["text"])
+                reply = Message(self.bot, self.replyKey, self.replyDir, chat_id)
+                msg, self.state = reply.loadMsg(text) # how will we make sure it is
+
+            elif state is st.sendMessage:
+                # previous message should have said enter your message
+                # could still use message to say resolved
+                state = st.default
+
+            elif state is reminder:
+                # previous message should have said enter message
+                state = st.default
+
+            elif state is reminderTime:
+                # previous message should have said enter message time
+                state = st.default
+
+            elif state is cancel:
+                # enter cancel to delete last message or reminder (Last event)
+                state = st.default
+
+            self.bot.sendMessage(chat_id, msg)
+            self.state[chat_id] = state
+
 
     def listen(self):
         """Starts the program to listen"""
