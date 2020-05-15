@@ -114,6 +114,7 @@ class Bot:
         else: # add the user and create user object
             user = User(chat_id)
             self.users[chat_id] = user
+            # add intro message to arrive soon
 
         if content_type == "text":
             text = msg["text"]
@@ -129,7 +130,15 @@ class Bot:
             self.handler.checkTimeEvents()
             time.sleep(10)
 
+def loop():
+    while 1:
+        token = "***REMOVED***"
+        goose = Bot(token, "assets/messages/replies/~key", "assets/messages/init/~key")
+        print(goose.handler.df)
+        goose.listen()
+        time.sleep(10)
+
 if __name__ == "__main__":
-    token = "***REMOVED***"
-    goose = Bot(token, "assets/messages/replies/~key", "assets/messages/init/~key")
-    goose.listen()
+    loop()
+
+    # restart on error

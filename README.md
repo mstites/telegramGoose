@@ -5,21 +5,28 @@ To do:
 * Explain folder structure (keys)
 * Fun facts (bi)
 * https://stackoverflow.com/questions/31860628/how-to-send-an-image-from-a-telegram-bot
-* change random messages to just be one file, with multiple lines. Can add the symbol on the end of the file name
-Make requirements.txt
 * Random honks
 * Random cute images
 * Send positivity
 * Pets
+* logs -> store all the variable changes as txt
 * Would you like water? Yes -> happy goose noises No -> sad goose noises
-* Change directories to make more sense
-* Way to handle if dataframe does not exist events
+* Add ability to take commands (eg: reboot, load events) -> take user input in loop
+* come up with plan to get access to servers? 
 
-* handle case of nothing to cancel
+* ~events should load into and then clear once loaded
 
 Phrases:
 * how are you doing?
 * good morning
+
+Reminder system:
+weeks, get number before
+month, get number before
+day, get number before
+day of week, get time between
+
+print back reminder time
 
 
 
