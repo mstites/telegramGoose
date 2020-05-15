@@ -16,3 +16,13 @@ Way to check if selected message contains () - a function
 Trans support bot:
 "Misgendered by professors"
 * Do you need help writing a letter to a professor
+
+
+user folder structure:
+ID/
+mailbox: any items for mail, targetted by date
+mailTaget: id to send mail to
+msgCount: number of messages
+
+assets folder structur:
+messages: messages
