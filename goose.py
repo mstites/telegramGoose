@@ -9,13 +9,6 @@ import os
 import datetime as dt
 import pandas as pd
 
-def updateTime():
-    utc = dt.datetime.now()
-    global t
-    global date
-    date = (utc.month, utc.day, utc.year) # (##/##/####)
-    t = (utc.hour, utc.min) # (##,##) in 24 hour time
-
 def ofile(location):
     with open(location, "r") as file:
         return file.read()
@@ -73,11 +66,9 @@ class User:
 
     def __str__(self):
         # return user id, number of messages, stored messages ,etc
-        return str((self.id, self.msgCount))
+        return str((self.id, self.msgCount, self.mailTarget))
 
     def load(self):
-        # toLoad = ["msgCount", ...]
-        # for...
         userLoc = self.loc+self.id
         if not os.path.exists(userLoc):
             os.makedirs(userLoc)
@@ -85,9 +76,16 @@ class User:
         msgCountLoc = userLoc + '/msgCount'
         if os.path.exists(msgCountLoc):
             self.msgCount = ofile(msgCountLoc)
-        else
+        else:
             self.msgCount = 1
             self.write()
+
+        mailTargetLoc = userLoc + '/userLoc'
+        if os.path.exists(mailTargetLoc):
+            self.mailTarget = ofile(mailTargetLoc)
+        else:
+            self.mailTarget = ***REMOVED***
+            wfile(mailTargetLoc, self.mailTarget)
 
     def uChatCount(self):
         self.msgCount = int(self.msgCount) + 1
@@ -121,8 +119,9 @@ class EventHandler:
 
     def remove(self, event):
         """Remove event from dataframe"""
-        df = df.drop(0)
-        df = df.reset_index()
+        self.df = self.df.drop(0)
+        self.df = self.df.reset_index()
+        print(self.df)
 
     def runEvent(self, event):
         """Run an event"""
@@ -134,21 +133,27 @@ class EventHandler:
 
     def addEvent(self, event):
         """Add event to event dataframe"""
-        row = {time':event.time, 'user':event.user, 'action':event.action, 'content':event.content}
+        row = {'time':event.time, 'user':event.user, 'action':event.action, 'content':event.content}
         self.df = self.df.append(row, ignore_index=True)
-        self.df = self.df.sort_values(by='time')     
-        df = df.reset_index()
+        self.df = self.df.sort_values(by='time')
+        self.df = self.df.reset_index()
         self.saveToDisk()
 
-    def checkEvents(self):
+    def checkTimeEvents(self):
         # check if it is time to send any events
-        currTime = dt.datetime.now()
-        nextEvent = self.df.iloc[0]
-        if currTime > nextEvent['time']: # activate event
-            self.runEvent(nextEvent)
-            self.remove(nextEvent)
+        if self.df.empty: # no reason to checks
+            return
+        else:
+            currTime = dt.datetime.now()
+            print(currTime)
+            nextEvent = self.df.iloc[0]
+            print('next')
+            print(nextEvent)
+            if currTime > nextEvent['time']: # activate event
+                self.runEvent(nextEvent)
+                self.remove(nextEvent)
 
-class Message:
+class Reply:
     def __init__(self, bot, key, msgDir, userID):
         """key: dict of the key """
         self.key = key #self.loadKeyDict(keyLocation)
@@ -186,7 +191,7 @@ class Message:
         msg = self.loadMsg(text)
         self.bot.sendMessage(self.userID, msg)
 
-class Action(Message):
+class Action(Reply):
     """Parse action messages"""
     def __init__(self, request, userID):
         """request: requset starting
@@ -203,6 +208,11 @@ class Action(Message):
         selDir = dir + '/' + str(sel)
         return ofile(selDir)
 
+    def sendMessage(self):
+        """Send message"""
+        pass
+
+    # REDO?
     def deliverDaily(self):
         """Open daily messages - mailbox"""
         global date
@@ -236,11 +246,9 @@ class Bot:
         self.replyKey = loadKeyDict(replyLoc)
         self.replyDir = 'replies/'
         self.initDir = 'init/'
-        # self.reply = Message(self.bot, replyLoc, 'replies/')
-        # self.initial = Message(self.bot, initLoc, 'init/')
         self.users = {} # id key, user val
         self.loadUsers()
-        # self.users = []
+        self.events = EventHandler(self.bot)
 
     def __str__(self):
         return self.bot.getMe()
@@ -263,9 +271,10 @@ class Bot:
         else: # add the user and create user object
             user = User(chat_id)
             self.users[chat_id] = user
+
         if content_type == "text":
             text = cleanInput(msg["text"])
-            reply = Message(self.bot, self.replyKey, self.replyDir, chat_id)
+            reply = Reply(self.bot, self.replyKey, self.replyDir, chat_id)
             reply.send(text)
 
     def listen(self):
@@ -273,10 +282,10 @@ class Bot:
         MessageLoop(self.bot, self.handle).run_as_thread()
         print ("Listening ...")
         while 1: # Keep the program running.
-            updateTime()
+            self.events.checkTimeEvents()
             time.sleep(10)
+
 if __name__ == "__main__":
-    updateTime() # initialize time
     token = "***REMOVED***"
     goose = Bot(token, "assets/messages/replies/~key", "assets/messages/init/~key")
     goose.listen()

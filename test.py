@@ -1,30 +1,12 @@
-import pandas as pd
 import datetime
+import pandas as pd
 
-utc = datetime.datetime.now()
 columns = ['time', 'user', 'action', 'content']
 df = pd.DataFrame(columns = columns)
+t = datetime.datetime.now() + datetime.timedelta(minutes=5)
+# test = Event(time, ***REMOVED***, )
 
-#
-# row1 = {'time':utc, 'user':123, 'action':'msg', 'content':'hello world'}
-# row2 = {'time':utc - datetime.timedelta(days=10), 'user':1, 'action':'msg', 'content':'hello world'}
-#
-# df = df.append(row1, ignore_index=True)
-# df = df.append(row2, ignore_index=True)
-# df = df.sort_values(by='time')
-# df = df.reset_index()
+row = {'time':t, 'user':***REMOVED***, 'action':'msg', 'content':'test'}
+df = df.append(row, ignore_index=True)
 print(df)
-#
 df.to_pickle('assets/events.pkl')
-#
-# nextEvent = df.iloc[0]['time']
-# print(nextEvent)
-#
-# event = df.iloc[0]
-# test = event['action']
-# print(test)
-# print(type(test))
-# # sort by timestamp
-#
-# df = df.drop(0)
-# print(df)
