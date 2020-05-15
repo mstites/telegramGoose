@@ -56,10 +56,10 @@ class Bot:
         """
         self.bot = telepot.Bot(token)
         self.replyKey = tools.loadKeyDict(replyLoc)
-        self.replyDir = 'replies/'
-        self.initDir = 'init/'
+        self.replyDir = "assets/messages/replies/"
+        self.initDir = "assets/messages/init/"
         self.loadUsers()
-        self.handler = events.EventHandler(self.bot)
+        self.handler = events.EventHandler(self.bot, "assets/", self.initDir)
 
     def __str__(self):
         return self.bot.getMe()
@@ -81,7 +81,6 @@ class Bot:
 
         if chat_id in self.users:
             self.users[chat_id].uChatCount()
-            print(self.users[chat_id])
 
         else: # add the user and create user object
             user = User(chat_id)
@@ -97,23 +96,25 @@ class Bot:
 
             elif state is st.sendMessage:
                 user = self.users[chat_id]
-                delivery = dt.datetime.now() + dt.timedelta(minutes=5)
-                self.handler.addTimeEvent(delivery, user.mailTarget, 'msg', text)
+                delivery = dt.datetime.now() + dt.timedelta(hours=5)
+                self.handler.addEvent((delivery, user.mailTarget, 'msg', text))
                 msg = "Message will be sent! *HONK*"
                 state = st.default
 
-            elif state is reminder:
+            elif state is st.reminder:
                 # previous message should have said enter message
                 state = st.default
 
-            elif state is reminderTime:
+            elif state is st.reminderTime:
                 # previous message should have said enter message time
                 state = st.default
 
-            elif state is cancel:
-                # enter cancel to delete last message or reminder (Last event)
+            if state is st.cancelMessage:
+                user = self.users[chat_id]
+                success = self.handler.cancelEvent(user.mailTarget,  'msg')
+                if not success:
+                    msg = "No message to delete you silly goose"
                 state = st.default
-                # will need ability to have who entered it
 
             self.bot.sendMessage(chat_id, msg)
             self.states[chat_id] = state
