@@ -39,6 +39,22 @@
 
 # cute aggression generation, random times for honks
 
+# when asking for positivity, give photo or message. Less command like
+# if you cannot directly request
+
+# add message contains capabilities, instead of just is
+
+# how are you doing?
+# I can't offer too much. But have a nuzzle and a cat photo
+# that is great! what is making it so good!
+
+# daily mail can just be one big file
+
+# should add instructions on how to change things
+# or could make everything in one central document
+
+# get rid of txt?
+
 import random
 import sys
 import time
@@ -47,6 +63,16 @@ import telepot
 from telepot.loop import MessageLoop
 import string
 import os
+
+# date = (0, 0, 0)
+# time = (0, 0)
+
+def updateTime():
+    utc = time.localtime()
+    global t
+    global date
+    date = (utc.tm_mon, utc.tm_mday, utc.tm_year) # (##/##/####)
+    t = (utc.tm_hour, utc.tm_min) # (##,##) in 24 hour time
 
 def ofile(location):
     with open(location, "r") as file:
@@ -66,18 +92,36 @@ def ufile(location, new):
     """Update file, add a new line"""
     pass
 
-def cleanInput(text):
+def cleanInput(text, toStrip = string.punctuation + string.digits + " "):
     """Cleans user input
-    >>> cleanInput("GoOd moRnIng GOOSE")
-    'goodmorninggoose'
-    >>> cleanInput("good-morning goose!")
-    'goodmorninggoose'
-    >>> cleanInput("gOOD@@ mORniNg-?goo87se.,.")
-    'goodmorninggoose'"""
-
-    toStrip = string.punctuation + string.digits + " "
+    toStrip = characters to remove"""
     cleanText = text.translate(str.maketrans("", "", toStrip))
     return cleanText.lower()
+
+def loadKey (loc):
+    """Load key from txt file"""
+    lines = ofile(loc).splitlines()
+    listKey = []
+    for line in lines:
+        if line.startswith("#"):
+            continue # ignore commented lines
+        else:
+            line = line.replace(":", ",") # only one seperator type
+            line = line.split(",")
+            listKey.append(line)
+    return listKey
+
+def loadKeyDict(loc):
+    """Construct the key dictionary"""
+    listKey = loadKey(loc)
+    dictKey = {}
+    for ky in listKey:
+        output = ky[0] # eventual reply to message, no cleaning
+        for item in ky[1:]:
+            item = cleanInput(item)
+            dictKey[item] = output
+    key = dictKey
+    return key
 
 class User:
     def __init__(self, id):
@@ -97,7 +141,7 @@ class User:
         try:
             self.msgCount = ofile(self.loc + self.id + "/msgCount")
         except FileNotFoundError:
-            self.msgCount = 0
+            self.msgCount = 1
             self.write()
 
     def uChatCount(self):
@@ -109,7 +153,13 @@ class User:
         wfile(location, self.msgCount)
 
 class Event:
+    # each user should have its own event object
+    # certain signal for delete after sent
+    # maybe just each is mark sent active after sent, and then create a new object
+    # for repeating
     # should I be sending messages from this class?
+    # way to check if the event has already been activated. Like some sort of check
+    # on the file name??? Or write to file? Daily actions
     def __init__(self):
         # load events from file
         # should probably inherit from messages
@@ -120,7 +170,7 @@ class Event:
         pass
 
     def checkMess(self):
-        # check message count events
+        # check message count eventsprint(cleanInput(str(date), "(), "))
         pass
 
     def checkEvents(self):
@@ -128,46 +178,22 @@ class Event:
         pass
 
 class Message:
-    def __init__(self, bot, keyLocation, msgDir):
-        """keyLocation: string of the key location"""
-        self.key = self.loadKeyDict(keyLocation)
+    def __init__(self, bot, key, msgDir, userID):
+        """key: dict of the key """
+        self.key = key #self.loadKeyDict(keyLocation)
         self.bot = bot
+        self.userID = userID
         self.msgDir = msgDir # default msgDir
-
-    def loadKey (self, keyLocation):
-        """Load key from txt file"""
-        lines = self.open(keyLocation).splitlines()
-        listKey = []
-        for line in lines:
-            if line.startswith("#"):
-                continue # ignore commented lines
-            else:
-                line = line.replace(":", ",") # only one seperator type
-                line = line.split(",")
-                listKey.append(line)
-        return listKey
-
-    def loadKeyDict(self, keyLocation):
-        """Construct the key dictionary"""
-        listKey = self.loadKey(keyLocation)
-        dictKey = {}
-        for ky in listKey:
-            output = ky[0] # eventual reply to message, no cleaning
-            for item in ky[1:]:
-                item = cleanInput(item)
-                dictKey[item] = output
-        return dictKey
 
     def open(self, msgName):
         """Load message from assets and return as string"""
-        location = "assets/messages/" + msgName + ".txt"
+        location = "assets/messages/" + msgName
         with open(location, "r") as file:
             msg = file.read()
         return msg
 
     def action(self, request):
         """Check if request is action"""
-        print(type(request))
         if (("&" in request) or ("()" in request)):
             return True
         else:
@@ -179,20 +205,23 @@ class Message:
         if request is None:
             return self.open("replies/unknownCommand")
         elif self.action(request): #
-            action = Action(request)
+            action = Action(request, self.userID)
             return action.process()
         else:
             return self.open(self.msgDir + request)
 
-    def send(self, chat_id, text):
+    def send(self, text):
         """Sends message"""
         msg = self.loadMsg(text)
-        self.bot.sendMessage(chat_id, msg)
+        self.bot.sendMessage(self.userID, msg)
 
 class Action(Message):
-    """parse action messages"""
-    def __init__(self, request):
+    """Parse action messages"""
+    def __init__(self, request, userID):
+        """request: requset starting
+        userID: id of messege originator"""
         self.request = request
+        self.userID = userID
 
     def randSel(self):
         """Select random message in request category"""
@@ -200,14 +229,20 @@ class Action(Message):
         dir = 'assets/messages/replies/'+clean
         messages = os.listdir(dir)
         sel = random.randrange(len(messages))
-        selDir = dir + '/' + str(sel) + '.txt'
+        selDir = dir + '/' + str(sel)
         return ofile(selDir)
 
     def deliverDaily(self):
-        """Open daily message"""
-        # if no daily
-        return "Deliver daily"
-        # intro message for every single message
+        """Open daily messages - mailbox"""
+        global date
+        uDir = 'users/' + str(self.userID) + '/mailbox/'
+        date = cleanInput(str(date), "(), ")
+        dir = uDir + date
+        if os.path.exists(dir):
+            msg = ofile(uDir + date)
+            return '*HONK* Here are your messages:' + msg
+        else:
+            return "No new mail today"
 
     def process(self):
         """Determine action type and run appropriate function"""
@@ -227,8 +262,11 @@ class Bot:
         initLoc: string location of bot initial messages based on input
         """
         self.bot = telepot.Bot(token)
-        self.reply = Message(self.bot, replyLoc, 'replies/')
-        self.initial = Message(self.bot, initLoc, 'init/')
+        self.replyKey = loadKeyDict(replyLoc)
+        self.replyDir = 'replies/'
+        self.initDir = 'init/'
+        # self.reply = Message(self.bot, replyLoc, 'replies/')
+        # self.initial = Message(self.bot, initLoc, 'init/')
         self.users = {} # id key, user val
         self.loadUsers()
         # self.users = []
@@ -254,19 +292,20 @@ class Bot:
         else: # add the user and create user object
             user = User(chat_id)
             self.users[chat_id] = user
-
         if content_type == "text":
             text = cleanInput(msg["text"])
-            self.reply.send(chat_id, text)
+            reply = Message(self.bot, self.replyKey, self.replyDir, chat_id)
+            reply.send(text)
 
     def listen(self):
         """Starts the program to listen"""
         MessageLoop(self.bot, self.handle).run_as_thread()
         print ("Listening ...")
         while 1: # Keep the program running.
+            updateTime()
             time.sleep(10)
-
 if __name__ == "__main__":
+    updateTime() # initialize time
     token = "1165408473:AAFbR7nslY9WPWAx5H3AcOk5Klrf3-9Lp5E"
-    goose = Bot(token, "replies/~key", "init/~key")
+    goose = Bot(token, "assets/messages/replies/~key", "assets/messages/init/~key")
     goose.listen()

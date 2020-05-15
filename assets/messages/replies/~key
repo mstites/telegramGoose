@@ -7,3 +7,4 @@ help: goose help, help
 # catPhoto(): send cat photo, something cute
 # goosePhoto(): goose attack, goose cuteness
 greetings/hello&: hello, hi
+# photo(cat)
