@@ -17,13 +17,16 @@ class Event:
         if self.action == 'msg':
             return True
         else:
-            return True
+            return False
 
     def process(self):
         if self.isMsg():
             opener = ms.Action('delivery&', self.dir)
             openMsg = opener.randSel()
             self.content = openMsg + "\n" + self.content + "\n"
+        # elif: self.isBotMsg():
+        #     self.content = self.content # probably do not need this elif at
+        #     # all then
 
 class EventHandler:
     """Handle events"""
@@ -34,6 +37,7 @@ class EventHandler:
         self.dir = dir
         self.initDir = initDir
         self.df = self.readData("events.pkl")
+        self.loadBotEvents("~events")
         self.bot = bot
 
     def readData(self, fileName):
@@ -45,9 +49,45 @@ class EventHandler:
             columns = ['time', 'user', 'action', 'content']
             return pd.DataFrame(columns = columns)
 
+    def parseEventsFile(self, loc):
+        """Parse events file, erase events, and return event list objects"""
+        file = tools.ofile(loc)
+        lines = file.splitlines()
+        newFile= []
+        events = []
+        for line in lines:
+            if line.startswith("#"):
+                newFile.append(line)
+            elif line.startswith("dir:"):
+                newFile.append(line)
+                line = line.strip("dir: ")
+                self.botEventsDir = line
+            else:
+                line = line.replace("-", ",") # only one seperator
+                line = line.replace(":", ",") # only one seperator
+                line = line.replace(" ", "") # strip whitespace
+                line = line.split(",")
+                events.append(line)
+
+        newFile = ('\n'.join(map(str, newFile)))
+        tools.wfile(loc, newFile) # delete events from file, they are loaded
+        return events
+
+
+    def loadBotEvents(self, fileName):
+        """Load bot events and add them to the dataframe"""
+        loc = self.dir + fileName
+        events = self.parseEventsFile(loc)
+        for event in events:
+            time = dt.datetime(int(event[2]), int(event[0]), int(event[1]), int(event[3]), int(event[4]))
+            # YEAR, MONTH, DAY, HOUR, MINUTE
+            contentLoc = self.botEventsDir + event[7]
+            content = tools.ofile(contentLoc)
+            self.addEvent((time, int(event[5]), event[6], content))
+
     def sortSave(self):
-        self.df = self.df.reset_index(drop = True)
         self.df = self.df.sort_values(by='time')
+        self.df = self.df.reset_index(drop = True)
         self.df.to_pickle(self.loc) # save
 
     def removeEvent(self, loc):
@@ -56,7 +96,8 @@ class EventHandler:
         self.sortSave()
 
     def addEvent(self, eventInfo):
-        """Add event to event dataframe"""
+        """Add event to event dataframe
+        eventInfo: tuple(time, target, action, content)"""
         row = self.makeRow(eventInfo)
         self.df = self.df.append(row, ignore_index=True)
         self.sortSave()
@@ -74,7 +115,7 @@ class EventHandler:
 
     def runEvent(self, event):
         """Run an event"""
-        if event['action'] == 'msg':
+        if ((event['action'] == 'msg') or (event['action'] == 'botmsg')):
             self.bot.sendMessage(event['user'], event['content'])
             print('Running event: ', event)
 

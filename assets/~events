@@ -1,0 +1,4 @@
+# Events to add to event database
+# date, 24 time, user, type, file
+# 5-15-2020, 19:00, 774796474, botmsg, driving
+dir: assets/messages/init/botmsg/
