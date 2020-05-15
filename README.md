@@ -28,7 +28,21 @@ assets folder structur:
 messages: message txt files
 * init: initial messages (~key is the item that contains aliases)
 * replies: replying messages (~key contains aliases)
+
+Ideas:
+* Fun facts (bi)
+* change random messages to just be one file, with multiple lines. Can add the symbol on the end of the file name
+
+
+* Event handler, dataframe with all events
+* would have status / date / time / user / action / content
+* eg sent / 01
+
 Sort through:
+
+
+
+
 #!/usr/bin/env python
 # coding: utf-8
 

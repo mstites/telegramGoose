@@ -6,13 +6,15 @@ import telepot
 from telepot.loop import MessageLoop
 import string
 import os
+import datetime as dt
+import pandas as pd
 
 def updateTime():
-    utc = time.localtime()
+    utc = dt.datetime.now()
     global t
     global date
-    date = (utc.tm_mon, utc.tm_mday, utc.tm_year) # (##/##/####)
-    t = (utc.tm_hour, utc.tm_min) # (##,##) in 24 hour time
+    date = (utc.month, utc.day, utc.year) # (##/##/####)
+    t = (utc.hour, utc.min) # (##,##) in 24 hour time
 
 def ofile(location):
     with open(location, "r") as file:
@@ -76,11 +78,14 @@ class User:
     def load(self):
         # toLoad = ["msgCount", ...]
         # for...
-        if not os.path.exists(self.loc + self.id):
-            os.makedirs(self.loc + self.id)
-        try:
-            self.msgCount = ofile(self.loc + self.id + "/msgCount")
-        except FileNotFoundError:
+        userLoc = self.loc+self.id
+        if not os.path.exists(userLoc):
+            os.makedirs(userLoc)
+
+        msgCountLoc = userLoc + '/msgCount'
+        if os.path.exists(msgCountLoc):
+            self.msgCount = ofile(msgCountLoc)
+        else
             self.msgCount = 1
             self.write()
 
@@ -93,29 +98,55 @@ class User:
         wfile(location, self.msgCount)
 
 class Event:
-    # each user should have its own event object
-    # certain signal for delete after sent
-    # maybe just each is mark sent active after sent, and then create a new object
-    # for repeating
-    # should I be sending messages from this class?
-    # way to check if the event has already been activated. Like some sort of check
-    # on the file name??? Or write to file? Daily actions
-    def __init__(self):
-        # load events from file
-        # should probably inherit from messages
-        pass
+    def __init__(self, time, userID, action, content):
+        """
+        time: time to send
+        userID: user to send to
+        action: type
+        content: msg
+        """
+        self.time = time
+        self.user = userID
+        self.action = action
+        self.content = content
 
-    def checkTime(self):
-        # check time events
-        pass
+    def __str__(self):
+        return str(self.status + '/' + self.time + '/' + self.user + '/' + self.action)
 
-    def checkMess(self):
-        # check message count eventsprint(cleanInput(str(date), "(), "))
-        pass
+class EventHandler:
+    """Handle events"""
+    def __init__(self, bot):
+        self.df = pd.read_pickle('assets/events.pkl')
+        self.bot = bot
+
+    def remove(self, event):
+        """Remove event from dataframe"""
+        df = df.drop(0)
+        df = df.reset_index()
+
+    def runEvent(self, event):
+        """Run an event"""
+        if event['action'] == 'msg':
+            self.bot.sendMessage(event['user'], event['content'])
+
+    def saveToDisk(self):
+        self.df.to_pickle('assets/events.pkl')
+
+    def addEvent(self, event):
+        """Add event to event dataframe"""
+        row = {time':event.time, 'user':event.user, 'action':event.action, 'content':event.content}
+        self.df = self.df.append(row, ignore_index=True)
+        self.df = self.df.sort_values(by='time')     
+        df = df.reset_index()
+        self.saveToDisk()
 
     def checkEvents(self):
-        # run the checks
-        pass
+        # check if it is time to send any events
+        currTime = dt.datetime.now()
+        nextEvent = self.df.iloc[0]
+        if currTime > nextEvent['time']: # activate event
+            self.runEvent(nextEvent)
+            self.remove(nextEvent)
 
 class Message:
     def __init__(self, bot, key, msgDir, userID):
