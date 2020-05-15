@@ -81,9 +81,9 @@ class User:
             self.msgCount = 1
             self.write()
 
-        mailTargetLoc = userLoc + '/userLoc'
+        mailTargetLoc = userLoc + '/mailTarget'
         if os.path.exists(mailTargetLoc):
-            self.mailTarget = ofile(mailTargetLoc)
+            self.mailTarget = cleanInput(ofile(mailTargetLoc), "\n")
         else:
             self.mailTarget = ***REMOVED***
             wfile(mailTargetLoc, self.mailTarget)
@@ -106,6 +106,7 @@ class EventHandler:
         """Remove event from dataframe"""
         self.df = self.df.drop(0)
         self.df = self.df.reset_index()
+        self.df.to_pickle('assets/events.pkl')
 
     def runEvent(self, event):
         """Run an event"""
@@ -131,9 +132,9 @@ class EventHandler:
             currTime = dt.datetime.now()
             print(currTime)
             nextEvent = self.df.iloc[0]
-            print('next')
-            print(nextEvent)
+            print(self.df)
             if currTime > nextEvent['time']: # activate event
+                print('hi')
                 self.runEvent(nextEvent)
                 self.remove(nextEvent)
 
@@ -164,12 +165,12 @@ class Message:
         if request is None:
             return self.open("replies/unknownCommand"), st.default
         elif self.action(request): #
-            action = Action(request, self.userID)
+            action = Action(request, self.userID, self.msgDir)
             return action.process()
         else:
             return self.open(self.msgDir + request), st.default
 
-class Message(Reply):
+class Action(Message):
     """Parse action messages"""
     def __init__(self, request, userID, msgDir):
         """request: requset starting
@@ -188,7 +189,7 @@ class Message(Reply):
         return ofile(selDir)
 
     def sendMessage(self):
-        msg =ofile(self.msgDir)
+        msg = ofile(self.msgDir + self.request)
         return msg
 
     def process(self):
@@ -197,7 +198,7 @@ class Message(Reply):
             self.msg = self.randSel()
             self.state = st.default
         elif self.request == "sendMessage()":
-            self.msg = self.sendDaily()
+            self.msg = self.sendMessage()
             self.state = st.sendMessage
         else:
             self.msg = "ERROR"
@@ -216,7 +217,7 @@ class Bot:
         self.replyDir = 'replies/'
         self.initDir = 'init/'
         self.users = {} # id key, user val
-        self.state = {} # state of each users session
+        self.states = {} # state of each users session
         self.loadUsers()
         self.events = EventHandler(self.bot)
 
@@ -229,7 +230,7 @@ class Bot:
         for id in userIds:
             user = User(id)
             self.users[int(id)] = user
-            self.state[int(id)] = st.default
+            self.states[int(id)] = st.default
 
     def handle(self, msg):
         """Handles message sent to goose bot."""
@@ -245,16 +246,19 @@ class Bot:
             self.users[chat_id] = user
 
         if content_type == "text":
-            state = self.state[chat_id]
-
+            state = self.states[chat_id]
+            text = msg["text"]
             if state is st.default:
-                text = cleanInput(msg["text"])
+                text = cleanInput(text)
                 reply = Message(self.bot, self.replyKey, self.replyDir, chat_id)
-                msg, self.state = reply.loadMsg(text) # how will we make sure it is
+                msg, state = reply.loadMsg(text) # how will we make sure it is
 
             elif state is st.sendMessage:
-                # previous message should have said enter your message
-                # could still use message to say resolved
+                user = self.users[chat_id]
+                delivery = dt.datetime.now() + dt.timedelta(hours=8)
+                store = "I have a message for you!! *uses beak to place in hand*: \n\n\n" + text + "\n\n"
+                self.events.addTimeEvent(delivery, user.mailTarget, 'msg', store)
+                msg = "Message ready to send"
                 state = st.default
 
             elif state is reminder:
@@ -270,7 +274,7 @@ class Bot:
                 state = st.default
 
             self.bot.sendMessage(chat_id, msg)
-            self.state[chat_id] = state
+            self.states[chat_id] = state
 
 
     def listen(self):
