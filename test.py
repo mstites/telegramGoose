@@ -8,16 +8,15 @@ df = pd.DataFrame(columns = columns)
 t = datetime.datetime.now() + datetime.timedelta(minutes=1)
 # test = Event(time, 774796474, )
 
-row = {'time':t, 'user':774796474, 'action':'msg', 'content':'test'}
-row2 = {'time':t+datetime.timedelta(minutes=2), 'user':774796474, 'action':'msg', 'content':'test'}
+row = {'time':t, 'user':1, 'action':'msg', 'content':'test'}
+row2 = {'time':t+datetime.timedelta(minutes=2), 'user':1, 'action':'msg', 'content':'test'}
+row3 = {'time':t+datetime.timedelta(minutes=4), 'user':2, 'action':'msg', 'content':'test'}
+row4 = {'time':t+datetime.timedelta(minutes=8), 'user':3, 'action':'msg', 'content':'test'}
 df = df.append(row, ignore_index=True)
 df = df.append(row2, ignore_index=True)
+df = df.append(row3, ignore_index=True)
+df = df.append(row4, ignore_index=True)
 df = df.reset_index(drop = True)
-print(df)
 
-nextEvent = df.iloc[0]
-print(nextEvent)
-df = df.drop(0)
-df = df.reset_index(drop = True)
-# df = df.reset_index()
-# df.to_pickle('assets/events.pkl')
+df = df.query('user == 1')
+print(df)

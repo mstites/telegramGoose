@@ -11,3 +11,5 @@ Commands:
 "hello" / "hi" - greet goose
 
 "send message" - send message
+
+"cancel message" - cancel message
