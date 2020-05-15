@@ -272,6 +272,7 @@ class Bot:
             elif state is cancel:
                 # enter cancel to delete last message or reminder (Last event)
                 state = st.default
+                # will need ability to have who entered it
 
             self.bot.sendMessage(chat_id, msg)
             self.states[chat_id] = state
