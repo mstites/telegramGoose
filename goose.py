@@ -12,7 +12,7 @@ import message as ms
 
 class User:
     def __init__(self, id):
-        self.id = str(id)
+        self.id =  str(id)
         self.loc = "users/"
         self.load()
 
@@ -71,8 +71,37 @@ class Bot:
         userIds = os.listdir('users')
         for id in userIds:
             user = User(id)
-            self.users[int(id)] = user
-            self.states[int(id)] = st.default
+            self.users[id] = user
+            self.states[id] = st.default
+
+    def reply(self, user, text):
+        state = self.states[user.id]
+        if state is st.default:
+            text = tools.cleanInput(text)
+            reply = ms.Message(self.bot, self.replyKey, self.replyDir, user.id)
+            msg, state = reply.loadMsg(text) # how will we make sure it is
+
+        elif state is st.sendMessage:
+            delivery = dt.datetime.now() + dt.timedelta(hours=5)
+            self.handler.addEvent((delivery, user.mailTarget, 'msg', text))
+            msg = "Message will be sent! *HONK*"
+            state = st.default
+
+        elif state is st.reminder:
+            # previous message should have said enter message
+            state = st.default
+
+        elif state is st.reminderTime:
+            # previous message should have said enter message time
+            state = st.default
+
+        if state is st.cancelMessage:
+            success = self.handler.cancelEvent(user.mailTarget,  'msg')
+            if not success:
+                msg = "No message to delete you silly goose"
+            state = st.default
+
+        return msg, state
 
     def handle(self, msg):
         """Handles message sent to goose bot."""
@@ -81,44 +110,16 @@ class Bot:
 
         if chat_id in self.users:
             self.users[chat_id].uChatCount()
-
+            user = self.users[chat_id]
         else: # add the user and create user object
             user = User(chat_id)
             self.users[chat_id] = user
 
         if content_type == "text":
-            state = self.states[chat_id]
             text = msg["text"]
-            if state is st.default:
-                text = tools.cleanInput(text)
-                reply = ms.Message(self.bot, self.replyKey, self.replyDir, chat_id)
-                msg, state = reply.loadMsg(text) # how will we make sure it is
-
-            elif state is st.sendMessage:
-                user = self.users[chat_id]
-                delivery = dt.datetime.now() + dt.timedelta(hours=5)
-                self.handler.addEvent((delivery, user.mailTarget, 'msg', text))
-                msg = "Message will be sent! *HONK*"
-                state = st.default
-
-            elif state is st.reminder:
-                # previous message should have said enter message
-                state = st.default
-
-            elif state is st.reminderTime:
-                # previous message should have said enter message time
-                state = st.default
-
-            if state is st.cancelMessage:
-                user = self.users[chat_id]
-                success = self.handler.cancelEvent(user.mailTarget,  'msg')
-                if not success:
-                    msg = "No message to delete you silly goose"
-                state = st.default
-
-            self.bot.sendMessage(chat_id, msg)
-            self.states[chat_id] = state
-
+            msg, state = self.reply(user, text)
+            self.bot.sendMessage(user.id, msg)
+            self.states[user.id] = state
 
     def listen(self):
         """Starts the program to listen"""
