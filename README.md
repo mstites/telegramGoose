@@ -12,6 +12,13 @@ Make requirements.txt
 * Send positivity
 * Pets
 * Would you like water? Yes -> happy goose noises No -> sad goose noises
+* Change directories to make more sense
+* 
 
 
 * Give reassurement for driving the day of - build a python script to modify it
+
+
+Requirements:
+* telepot
+* pandas

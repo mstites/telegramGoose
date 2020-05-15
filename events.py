@@ -1,9 +1,28 @@
 import tools
-import random
 import os
 import datetime as dt
 import pandas as pd
 import state as st
+import message as ms
+
+class Event:
+    def __init__(self, time, target, action, content):
+        self.time = time
+        self.target = target
+        self.action = action
+        self.content = content
+
+    def isMsg(self):
+        if self.action == 'msg':
+            return True
+        else:
+            return True
+
+    def process(self):
+        if self.isMsg():
+            opener = ms.Action('delivery&', 'init/')
+            openMsg = opener.randSel()
+            self.content = openMsg + "\n\n\n" + self.content + "\n\n"
 
 class EventHandler:
     """Handle events"""
@@ -34,7 +53,9 @@ class EventHandler:
 
     def addTimeEvent(self, time, target, action, content):
         """Add event to event dataframe"""
-        row = {'time':time, 'user':target, 'action':action, 'content':content}
+        event = Event(time, target, action, content)
+        event.process()
+        row = {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
         self.df = self.df.append(row, ignore_index=True)
         self.df = self.df.sort_values(by='time')
         self.df = self.df.reset_index(drop = True)
@@ -50,70 +71,3 @@ class EventHandler:
             if currTime > nextEvent['time']: # activate event
                 self.runEvent(nextEvent)
                 self.remove(0)
-
-class Message:
-    def __init__(self, bot, key, msgDir, userID):
-        """key: dict of the key """
-        self.key = key #self.loadKeyDict(keyLocation)
-        self.userID = userID
-        self.msgDir = msgDir # default msgDir
-
-    def open(self, msgName):
-        """Load message from assets and return as string"""
-        location = "assets/messages/" + msgName
-        with open(location, "r") as file:
-            msg = file.read()
-        return msg
-
-    def action(self, request):
-        """Check if request is action"""
-        if (("&" in request) or ("()" in request)):
-            return True
-        else:
-            return False
-
-    def loadMsg(self, text):
-        """Selects the appropriate message and returns as a string"""
-        request = self.key.get(text)
-        if request is None:
-            return self.open("replies/unknownCommand"), st.default
-        elif self.action(request): #
-            action = Action(request, self.userID, self.msgDir)
-            return action.process()
-        else:
-            return self.open(self.msgDir + request), st.default
-
-class Action(Message):
-    """Parse action messages"""
-    def __init__(self, request, userID, msgDir):
-        """request: requset starting
-        userID: id of messege originator"""
-        self.request = request
-        self.userID = userID
-        self.msgDir = 'assets/messages/' + msgDir
-
-    def randSel(self):
-        """Select random message in request category"""
-        clean = self.request[:-1] # remove rand indicator
-        dir = self.msgDir+clean
-        messages = os.listdir(dir)
-        sel = random.randrange(len(messages))
-        selDir = dir + '/' + str(sel)
-        return tools.ofile(selDir)
-
-    def sendMessage(self):
-        msg = tools.ofile(self.msgDir + self.request)
-        return msg
-
-    def process(self):
-        """Determine action type and run appropriate function"""
-        if "&" in self.request:
-            self.msg = self.randSel()
-            self.state = st.default
-        elif self.request == "sendMessage()":
-            self.msg = self.sendMessage()
-            self.state = st.sendMessage
-        else:
-            self.msg = "ERROR"
-            self.state = st.default
-        return self.msg, self.state
