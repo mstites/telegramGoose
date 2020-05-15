@@ -8,6 +8,7 @@ import pandas as pd
 import state as st
 import tools
 import events
+import message as ms
 
 class User:
     def __init__(self, id):
@@ -91,15 +92,14 @@ class Bot:
             text = msg["text"]
             if state is st.default:
                 text = tools.cleanInput(text)
-                reply = events.Message(self.bot, self.replyKey, self.replyDir, chat_id)
+                reply = ms.Message(self.bot, self.replyKey, self.replyDir, chat_id)
                 msg, state = reply.loadMsg(text) # how will we make sure it is
 
             elif state is st.sendMessage:
                 user = self.users[chat_id]
-                delivery = dt.datetime.now() + dt.timedelta(hours=4)
-                store = "I have a message for you!! *uses beak to place in hand*: \n\n\n" + text + "\n\n"
-                self.handler.addTimeEvent(delivery, user.mailTarget, 'msg', store)
-                msg = "Message ready to send"
+                delivery = dt.datetime.now() + dt.timedelta(minutes=5)
+                self.handler.addTimeEvent(delivery, user.mailTarget, 'msg', text)
+                msg = "Message will be sent! *HONK*"
                 state = st.default
 
             elif state is reminder:
