@@ -6,8 +6,8 @@ Commands:
 
 "Goose help" - see this message
 
-"Good morning Goose" / "goose deliver" - receive messages
-
 "Good morning" / "good morning" - say good morning
 
 "hello" / "hi" - greet goose
+
+"send message" - send message
