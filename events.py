@@ -11,11 +11,17 @@ class EventHandler:
         self.df = pd.read_pickle('assets/events.pkl')
         self.bot = bot
 
-    def remove(self, event):
+    def remove(self, loc):
         """Remove event from dataframe"""
-        self.df = self.df.drop(0)
+        self.df = self.df.drop(loc)
         self.df = self.df.reset_index(drop = True)
         self.df.to_pickle('assets/events.pkl')
+
+    def cancel(self, user, action):
+        """Cancel a previously requested event"""
+        # find last event by user and action
+        # delete event
+        pass
 
     def runEvent(self, event):
         """Run an event"""
@@ -43,7 +49,7 @@ class EventHandler:
             nextEvent = self.df.iloc[0]
             if currTime > nextEvent['time']: # activate event
                 self.runEvent(nextEvent)
-                self.remove(nextEvent)
+                self.remove(0)
 
 class Message:
     def __init__(self, bot, key, msgDir, userID):
