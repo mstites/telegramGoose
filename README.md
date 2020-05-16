@@ -2,23 +2,22 @@
 A bot to keep me busy during quarantine and give my girlfriend and I some laughs.
 
 To do:
-* Explain folder structure (keys)
-* Fun facts (bi)
-* https://stackoverflow.com/questions/31860628/how-to-send-an-image-from-a-telegram-bot
+1. https://stackoverflow.com/questions/31860628/how-to-send-an-image-from-a-telegram-bot
+2. When image event is sent, schedule next one
+3. More advanced message recognizition system -> look for keywords
+4. How are you doing?
+5. Reminder system
+
+Expansion content:
 * Random honks
-* Random cute images
-* Send positivity
 * Pets
+* Fun facts (bi)
+* Send positivity
+
+Other:
+* Explain folder structure (keys)
 * logs -> store all the variable changes as txt
-* Would you like water? Yes -> happy goose noises No -> sad goose noises
 * Add ability to take commands (eg: reboot, load events) -> take user input in loop
-* come up with plan to get access to servers?
-
-* ~events should load into and then clear once loaded
-
-Phrases:
-* how are you doing?
-* good morning
 
 Reminder system:
 weeks, get number before
