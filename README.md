@@ -12,7 +12,7 @@ To do:
 * logs -> store all the variable changes as txt
 * Would you like water? Yes -> happy goose noises No -> sad goose noises
 * Add ability to take commands (eg: reboot, load events) -> take user input in loop
-* come up with plan to get access to servers? 
+* come up with plan to get access to servers?
 
 * ~events should load into and then clear once loaded
 
@@ -27,12 +27,3 @@ day, get number before
 day of week, get time between
 
 print back reminder time
-
-
-
-* Give reassurement for driving the day of - build a python script to modify it
-
-
-Requirements:
-* telepot
-* pandas
