@@ -97,6 +97,7 @@ class Bot:
                 msg = "No message to delete you silly goose"
             state = st.default
         elif state is st.checkIn:
+            "I am hearing how you are doing, though am not able to process it quite yet."
             # analyze how are you question
             state = st.default
         return msg, state

@@ -3,7 +3,7 @@ greetings/morning: good morning, morning
 help: goose help, help
 sendMessage(): send message
 cancelMessage(): cancel message
+greetings/hello: hello, hi
 # catPhoto(): send cat photo, something cute
 # goosePhoto(): goose attack, goose cuteness
-greetings/hello: hello, hi
 # photo(cat)
