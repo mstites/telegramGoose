@@ -1,7 +1,7 @@
 To do:
 1. Change to telegram bot: https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html?highlight=send%20document#telegram.Bot.send_document
 2. When image event is sent, schedule next one
-3. More advanced message recognizition system -> look for keywords
+3. More advanced message recognizition system
 4. How are you doing?
 5. Reminder system
 

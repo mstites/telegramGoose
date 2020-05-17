@@ -16,18 +16,18 @@ class Message:
             return "I could not find the message :("
         elif os.path.isdir(location):
             # get file location
-            location = self.randSel(msgName)
+            location = self.randSel()
         with open(location, "r") as file:
             return file.read()
 
-    def randSel(self, fol):
+    def randSel(self):
         """Select random message according to message directory"""
-        messages = os.listdir(self.msgDir + fol)
+        messages = os.listdir(self.msgDir + self.request)
         sel = random.randrange(len(messages))
         fileLoc = self.msgDir + self.request + '/' + str(sel)
         return fileLoc
 
-    def isAction(self, request):
+    def isAction(self):
         """Check if request is action"""
         if (("&" in request) or ("()" in request)):
             return True
@@ -120,7 +120,7 @@ class Reply(Action):
         """Selects the appropriate message and returns as a string"""
         if self.request is None:
             return self.open("unknownCommand"), st.default
-        elif self.isAction(self.request): #
+        elif self.isAction(): #
             action = Action(self.msgDir, self.request)
             return action.process()
         else:
