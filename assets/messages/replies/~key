@@ -1,5 +1,5 @@
 # OUTPUTLOCATION: INPUT1, INPUT2, INPUT3
-# & is a random reply            msg = file.read()
+# & is a random reply
 greetings/morning&: good morning, morning
 help: goose help, help
 sendMessage(): send message

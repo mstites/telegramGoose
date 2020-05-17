@@ -26,3 +26,8 @@ day, get number before
 day of week, get time between
 
 print back reminder time
+
+Message recognition system:
+* One that matches most keywords
+* Create new version that inherits from Message
+* Then just use the msgopen from message to open

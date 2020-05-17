@@ -1,0 +1,9 @@
+# OUTPUTLOCATION: KEYWORD1, KEYWORD2, KEYWORD3
+# multiple repeats will increase weighting
+# & -> random reply, () -> function
+help: help
+greetings/morning&: good, morning
+greetings/hello&: hello, hi, hey, hiya, yo, nice, see, you, good, evening, afternoon
+sendMessage(): can, you, send, message
+cancelMessage(): can, you, cancel, message
+checkIn(): how, do, you, do, how, have, you, been, how, are, you
