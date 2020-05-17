@@ -24,9 +24,9 @@ class Message:
 
 class Action(Message):
     """Parse action messages"""
-    def __init__(self, request, msgDir):
-        self.request = request
+    def __init__(self, msgDir, request):
         self.msgDir = msgDir
+        self.request = request
 
     def randSel(self):
         """Select random message according to request"""
@@ -45,7 +45,7 @@ class Action(Message):
             state = st.default
         return state
 
-    def processAction(self):
+    def process(self):
         """Determine action type and run appropriate function"""
         if "&" in self.request:
             self.msg = self.randSel()
@@ -60,32 +60,52 @@ class Action(Message):
 
 class Reply(Action):
     """Precess user input and reply appropriately"""
-    def __init__(self, msgDir, key, input):
-        self.key = key
+    def __init__(self, msgDir, keys, input):
+        self.funcKey = keys[0]
+        self.transKey = keys[1]
         request = self.analyzeMessage(input)
-        super().__init__(userID, msgDir, request)
+        super().__init__(msgDir, request)
+
+    def checkTranslations(self, text):
+        """Check for any preformed messages in translation key"""
+        print('checking translations')
+        words = text.splitlines()
+        weights = {}
+        for word in words:
+            if word in self.transKey:
+                print('word: ', word)
+                if word in weights:
+                    weights[word] += 1
+                else:
+                    weights[word] = 1
+        print('weights: ', weights)
+        if weights:
+            translation = max(weights, key=weights.get)
+            print('translation: ', translation)
+            return translation
+        else: # no message
+            return None
 
     def analyzeMessage(self, input):
         """Analyze user message and return most likely request"""
         clean = tools.cleanInput(input)
-        words = clean.splitlines()
-        weight = {}
-        for word in words:
-            if word in self.key:
-                request = self.key.get(text)
-        #  for loop, go through each word in input
-        # see if that word matches any in text
-        # see which one shows up the most
-        # create a new dictionaries  with the totals
-        # if dictionary empty
-        self.request = None
+        if clean in self.funcKey:
+            return self.funcKey.get(clean)
+        else:
+            translation = self.checkTranslations(clean)
+            if translation is True:
+                return translation
+            else:
+                # check chatterbox
+                print("chatterbox")
+                return None
 
     def loadMsg(self):
         """Selects the appropriate message and returns as a string"""
         if self.request is None:
             return self.open("unknownCommand"), st.default
-        elif self.action(self.request): #
-            action = Action(request, self.msgDir)
+        elif self.isAction(self.request): #
+            action = Action(self.msgDir, self.request)
             return action.process()
         else:
             return self.open(self.request), st.default
