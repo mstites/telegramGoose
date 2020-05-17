@@ -2,7 +2,7 @@
 A bot to keep me busy during quarantine and give my girlfriend and I some laughs.
 
 To do:
-1. https://stackoverflow.com/questions/31860628/how-to-send-an-image-from-a-telegram-bot
+1. Change to telegram bot: https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html?highlight=send%20document#telegram.Bot.send_document
 2. When image event is sent, schedule next one
 3. More advanced message recognizition system -> look for keywords
 4. How are you doing?

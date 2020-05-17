@@ -48,14 +48,14 @@ class User:
         tools.wfile(location, self.msgCount)
 
 class Bot:
-    def __init__(self, token, replyLoc, initLoc):
+    def __init__(self, token, rFuncKey, rTransKey):
         """Initialize and create bot.
         token: token value for controlling bot
-        replyLoc: string location of input reply parings
-        initLoc: string location of bot initial messages based on input
+        rFuncKey: key for function runnig from message
+        rTransKey: key for translating text to response
         """
         self.bot = telepot.Bot(token)
-        self.replyKey = tools.loadKeyDict(replyLoc)
+        self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey))
         self.replyDir = "assets/messages/replies/"
         self.initDir = "assets/messages/init/"
         self.loadUsers()
@@ -77,7 +77,7 @@ class Bot:
     def reply(self, user, text):
         state = self.states[user.id]
         if state is st.default:
-            reply = ms.Reply(self.msgDir, self.replyKey, text)
+            reply = ms.Reply(self.replyDir, self.replyKeys, text)
             msg, state = reply.loadMsg() # how will we make sure it is
         elif state is st.sendMessage:
             delivery = dt.datetime.now() + dt.timedelta(hours=5)
@@ -128,15 +128,14 @@ class Bot:
             self.handler.checkTimeEvents()
             time.sleep(10)
 
-def loop():
-    while 1:
-        token = "***REMOVED***"
-        goose = Bot(token, "assets/messages/replies/~key", "assets/messages/init/~key")
-        print(goose.handler.df)
-        goose.listen()
-        time.sleep(10)
+def run():
+    # way to handle when telegram cuts it off for a bit
+    token = "***REMOVED***"
+    goose = Bot(token, "assets/messages/replies/~funcKey", "assets/messages/replies/~translationKey")
+    print(goose.handler.df)
+    goose.listen()
 
 if __name__ == "__main__":
-    loop()
+    run()
 
     # restart on error

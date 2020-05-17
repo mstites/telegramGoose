@@ -21,7 +21,7 @@ class Event:
 
     def process(self):
         if self.isMsg():
-            opener = ms.Action('delivery&', self.dir)
+            opener = ms.Action(self.dir, 'delivery&')
             openMsg = opener.randSel()
             self.content = openMsg + "\n" + self.content + "\n"
         # elif: self.isBotMsg():
