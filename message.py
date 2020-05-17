@@ -11,9 +11,21 @@ class Message:
     def open(self, msgName):
         """Load message from assets and return as string"""
         location = self.msgDir + msgName
+        if os.path.exists(location) is False:
+            print('ERROR: Message path does not exist')
+            return "I could not find the message :("
+        elif os.path.isdir(location):
+            # get file location
+            location = self.randSel(msgName)
         with open(location, "r") as file:
-            msg = file.read()
-        return msg
+            return file.read()
+
+    def randSel(self, fol):
+        """Select random message according to message directory"""
+        messages = os.listdir(self.msgDir + fol)
+        sel = random.randrange(len(messages))
+        fileLoc = self.msgDir + self.request + '/' + str(sel)
+        return fileLoc
 
     def isAction(self, request):
         """Check if request is action"""
@@ -28,13 +40,6 @@ class Action(Message):
         self.msgDir = msgDir
         self.request = request
 
-    def randSel(self):
-        """Select random message according to request"""
-        messages = os.listdir(self.msgDir + self.request)
-        sel = random.randrange(len(messages))
-        file = self.request + '/' + str(sel)
-        return self.open(file)
-
     def funcSelector(self):
         """Select function by changing state"""
         if self.request == "sendMessage()":
@@ -47,10 +52,7 @@ class Action(Message):
 
     def process(self):
         """Determine action type and run appropriate function"""
-        if "&" in self.request:
-            self.msg = self.randSel()
-            self.state = st.default
-        elif "()" in self.request:
+        if "()" in self.request:
             self.msg = self.open(self.request)
             self.state = self.funcSelector()
         else:
@@ -68,21 +70,32 @@ class Reply(Action):
 
     def checkTranslations(self, text):
         """Check for any preformed messages in translation key"""
-        print('checking translations')
-        words = text.splitlines()
-        weights = {}
-        for word in words:
-            if word in self.transKey:
-                print('word: ', word)
-                if word in weights:
-                    weights[word] += 1
-                else:
-                    weights[word] = 1
-        print('weights: ', weights)
-        if weights:
-            translation = max(weights, key=weights.get)
-            print('translation: ', translation)
-            return translation
+        words = text.split() # how does this handle /n
+        # should have a way to clean that does not clean spaces
+        searched = []
+        matches = {}
+        while words:
+            word = words[0]
+            if ((word in self.transKey) and (word not in searched)):
+                wordOutputs = self.transKey[word]
+                for output in wordOutputs:
+                    if output in matches:
+                        matches[output] += 1
+                    else:
+                        matches[output] = 1
+                searched = word # word has been searched
+            else: # next word
+                del words[0]
+                searched = []
+        if matches:
+            translation = max(matches, key=matches.get)
+            tmatch = matches[translation]
+            print('translation: ', translation, tmatch)
+            if tmatch > 2:
+                return translation
+            else: # too low likelines
+                return None
+        # if translation has low probablity, eg only one or two word match, return None
         else: # no message
             return None
 
@@ -92,8 +105,8 @@ class Reply(Action):
         if clean in self.funcKey:
             return self.funcKey.get(clean)
         else:
-            translation = self.checkTranslations(clean)
-            if translation is True:
+            translation = self.checkTranslations(input)
+            if translation is not None:
                 return translation
             else:
                 # check chatterbox
