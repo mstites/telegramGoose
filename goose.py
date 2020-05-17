@@ -77,20 +77,16 @@ class Bot:
     def reply(self, user, text):
         state = self.states[user.id]
         if state is st.default:
-            text = tools.cleanInput(text)
-            reply = ms.Message(self.bot, self.replyKey, self.replyDir, user.id)
-            msg, state = reply.loadMsg(text) # how will we make sure it is
-
+            reply = ms.Reply(self.msgDir, self.replyKey, text)
+            msg, state = reply.loadMsg() # how will we make sure it is
         elif state is st.sendMessage:
             delivery = dt.datetime.now() + dt.timedelta(hours=5)
             self.handler.addEvent((delivery, user.mailTarget, 'msg', text))
             msg = "Message will be sent! *HONK*"
             state = st.default
-
         elif state is st.reminder:
             # previous message should have said enter message
             state = st.default
-
         elif state is st.reminderTime:
             # previous message should have said enter message time
             state = st.default
@@ -100,7 +96,9 @@ class Bot:
             if not success:
                 msg = "No message to delete you silly goose"
             state = st.default
-
+        elif state is st.checkIn:
+            # analyze how are you question
+            state = st.default
         return msg, state
 
     def handle(self, msg):
