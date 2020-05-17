@@ -1,10 +1,9 @@
 # OUTPUTLOCATION: INPUT1, INPUT2, INPUT3
-# & is a random reply
-greetings/morning&: good morning, morning
+greetings/morning: good morning, morning
 help: goose help, help
 sendMessage(): send message
 cancelMessage(): cancel message
 # catPhoto(): send cat photo, something cute
 # goosePhoto(): goose attack, goose cuteness
-greetings/hello&: hello, hi
+greetings/hello: hello, hi
 # photo(cat)

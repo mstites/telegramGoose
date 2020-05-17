@@ -55,7 +55,7 @@ class Bot:
         rTransKey: key for translating text to response
         """
         self.bot = telepot.Bot(token)
-        self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey))
+        self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey, list = True))
         self.replyDir = "assets/messages/replies/"
         self.initDir = "assets/messages/init/"
         self.loadUsers()

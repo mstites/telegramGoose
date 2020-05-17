@@ -18,6 +18,7 @@ Other:
 * Explain folder structure (keys)
 * logs -> store all the variable changes as txt
 * Add ability to take commands (eg: reboot, load events) -> take user input in loop
+* Handeling mispellings
 
 Reminder system:
 weeks, get number before
