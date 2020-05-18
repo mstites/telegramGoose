@@ -5,6 +5,10 @@ To do:
 4. How are you doing?
 5. Reminder system
 6. Disable adding to groups
+7. Logging class
+
+* Update class seperate from bot, with events and such. Handler class, create reply and event handlers.
+* Make sure user ids always remain ints
 
 Expansion content:
 * Random honks

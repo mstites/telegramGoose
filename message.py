@@ -8,13 +8,13 @@ class Message:
         self.msgDir = msgDir # default msgDir
         self.request = request
 
-    def open(self, msgName):
+    def open(self):
         """Load message from assets and return as string"""
-        location = self.msgDir + msgName
+        location = self.msgDir + self.request
         if os.path.exists(location) is False:
             print('ERROR: Message path does not exist')
             return "I could not find the message :("
-        elif os.path.isdir(location):
+        if os.path.isdir(location):
             # get file location
             location = self.randSel()
         with open(location, "r") as file:
@@ -29,7 +29,7 @@ class Message:
 
     def isAction(self):
         """Check if request is action"""
-        if (("&" in request) or ("()" in request)):
+        if (("&" in self.request) or ("()" in self.request)):
             return True
         else:
             return False
@@ -55,7 +55,7 @@ class Action(Message):
     def process(self):
         """Determine action type and run appropriate function"""
         if "()" in self.request:
-            self.msg = self.open(self.request)
+            self.msg = self.open()
             self.state = self.funcSelector()
         else:
             self.msg = "ERROR"
@@ -93,7 +93,7 @@ class Reply(Action):
             translation = max(matches, key=matches.get)
             tmatch = matches[translation]
             print('translation: ', translation, tmatch)
-            if tmatch > 2:
+            if tmatch > 1:
                 return translation
             else: # too low likelines
                 return None
@@ -109,7 +109,6 @@ class Reply(Action):
         else:
             translation = self.checkTranslations(input)
             if translation is not None:
-                print(type(translation))
                 return translation
             else:
                 # check chatterbox
@@ -119,9 +118,10 @@ class Reply(Action):
     def loadMsg(self):
         """Selects the appropriate message and returns as a string"""
         if self.request is None:
-            return self.open("unknownCommand"), st.default
+            self.request = "unknownCommand"
+            return self.open(), st.default
         elif self.isAction(): #
             action = Action(self.msgDir, self.request)
             return action.process()
         else:
-            return self.open(self.request), st.default
+            return self.open(), st.default
