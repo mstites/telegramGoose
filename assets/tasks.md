@@ -1,26 +1,24 @@
 To do:
-1. Change to telegram bot: https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html?highlight=send%20document#telegram.Bot.send_document
-2. When image event is sent, schedule next one
-3. More advanced message recognizition system
-4. How are you doing?
-5. Reminder system
-6. Disable adding to groups
-7. Logging class
-
-* Update class seperate from bot, with events and such. Handler class, create reply and event handlers.
-* Make sure user ids always remain ints
+1. Update run.py structure: Handler class, reply and event handlers. Create main loop outside of classes
+2. Logging class, store errors
+3. Image events (when one is sent, schedule the next)
+4. More advanced message recognition system
+5. How are you doing?
 
 Expansion content:
 * Random honks
 * Pets
 * Fun facts (bi)
 * Send positivity
+* Reminder system
+* Disable adding to groups
 
 Other:
 * Explain folder structure (keys)
 * logs -> store all the variable changes as txt
 * Add ability to take commands (eg: reboot, load events) -> take user input in loop
 * Handeling mispellings
+* Disable adding to groups
 
 Reminder system:
 weeks, get number before
