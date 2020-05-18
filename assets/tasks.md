@@ -4,6 +4,7 @@ To do:
 3. More advanced message recognizition system
 4. How are you doing?
 5. Reminder system
+6. Disable adding to groups
 
 Expansion content:
 * Random honks
@@ -29,3 +30,14 @@ Message recognition system:
 * One that matches most keywords
 * Create new version that inherits from Message
 * Then just use the msgopen from message to open
+
+python-telegram-bot change over process:
+* Initialize bot with token -> telegram.Bot(token)
+* Read messages
+* Get message, userID
+* send message -> bot.send_message(id, text)
+  * send_photo
+  * send_document
+  * send_audio
+  * send_sticker
+  * send_video

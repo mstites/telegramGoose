@@ -1,7 +1,6 @@
-import sys
 import time
-import telepot
-from telepot.loop import MessageLoop
+import telegram
+import telegram.ext
 import os
 import datetime as dt
 import pandas as pd
@@ -54,12 +53,12 @@ class Bot:
         rFuncKey: key for function runnig from message
         rTransKey: key for translating text to response
         """
-        self.bot = telepot.Bot(token)
+        self.updater = telegram.ext.Updater(token, use_context=True)
         self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey, list = True))
         self.replyDir = "assets/messages/replies/"
         self.initDir = "assets/messages/init/"
         self.loadUsers()
-        self.handler = events.EventHandler(self.bot, "assets/", self.initDir)
+        self.handler = events.EventHandler(self.updater, "assets/", self.initDir)
 
     def __str__(self):
         return self.bot.getMe()
@@ -121,20 +120,32 @@ class Bot:
             self.bot.sendMessage(user.id, msg)
             self.states[user.id] = state
 
-    def listen(self):
+    def start(self, update, context):
+        context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+        # https://github.com/python-telegram-bot/python-telegram-bot/wiki/Transition-guide-to-Version-12.0
+        # telegram.Message.date? Or should I keep universal as to potentially support other platforms?
+
+    def handler(self):
         """Starts the program to listen"""
-        MessageLoop(self.bot, self.handle).run_as_thread()
-        print ("Listening ...")
-        while 1: # Keep the program running.
-            self.handler.checkTimeEvents()
-            time.sleep(10)
+        dispatcher = self.updater.dispatcher
+        textHandler = telegram.ext.MessageHandler(telegram.ext.filters.text, self.start)
+        # start_handler = telegram.ext.CommandHandler('start', self.start)
+        dispatcher.add_handler(textHandler)
+        # need catch all
+        self.updater.start_polling()
+        # do you want me to send this image?
+        # MessageLoop(self.bot, self.handle).run_as_thread()
+        # print ("Listening ...")
+        # while 1: # Keep the program running.
+        #     self.handler.checkTimeEvents()
+        #     time.sleep(10)
 
 def run():
     # way to handle when telegram cuts it off for a bit
     token = "***REMOVED***"
     goose = Bot(token, "assets/messages/replies/~funcKey", "assets/messages/replies/~translationKey")
     print(goose.handler.df)
-    goose.listen()
+    goose.handler()
 
 if __name__ == "__main__":
     run()
