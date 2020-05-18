@@ -13,6 +13,9 @@ class Event:
         self.content = info[3]
         self.dir = dir
 
+    def __str__(self):
+        return str((self.time, self.target, self.action, self.content))
+
     def isMsg(self):
         if self.action == 'msg':
             return True
@@ -21,8 +24,8 @@ class Event:
 
     def process(self):
         if self.isMsg():
-            opener = ms.Action(self.dir, 'delivery&')
-            openMsg = opener.randSel()
+            opener = ms.Action(self.dir, 'delivery')
+            openMsg = opener.open()
             self.content = openMsg + "\n" + self.content + "\n"
         # elif: self.isBotMsg():
         #     self.content = self.content # probably do not need this elif at
@@ -36,7 +39,7 @@ class EventHandler:
         initDir: Initial message folder"""
         self.dir = dir
         self.initDir = initDir
-        self.df = self.readData("events.pkl")
+        self.df = self.readData("events.hdf")
         self.loadBotEvents("~events")
         self.bot = bot
 
@@ -44,7 +47,7 @@ class EventHandler:
         """Read dataframe from disk, or create it if it does not exist"""
         self.loc = self.dir + fileName
         if os.path.exists(self.loc):
-            return pd.read_pickle(self.loc)
+            return pd.read_hdf(self.loc, 'df')
         else: # initialize
             columns = ['time', 'user', 'action', 'content']
             return pd.DataFrame(columns = columns)
@@ -88,7 +91,7 @@ class EventHandler:
     def sortSave(self):
         self.df = self.df.sort_values(by='time')
         self.df = self.df.reset_index(drop = True)
-        self.df.to_pickle(self.loc) # save
+        self.df.to_hdf(self.loc, 'df') # save
 
     def removeEvent(self, loc):
         """Remove event from dataframe"""
@@ -125,6 +128,7 @@ class EventHandler:
         """
         event = Event(eventInfo, self.initDir)
         event.process()
+        print(event)
         return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
 
 

@@ -8,10 +8,11 @@ import state as st
 import tools
 import events
 import message as ms
+import logging
 
 class User:
     def __init__(self, id):
-        self.id =  str(id)
+        self.id =  id
         self.loc = "users/"
         self.load()
 
@@ -20,7 +21,7 @@ class User:
         return str((self.id, self.msgCount, self.mailTarget))
 
     def load(self):
-        userLoc = self.loc+self.id
+        userLoc = self.loc + str(self.id)
         if not os.path.exists(userLoc):
             os.makedirs(userLoc)
 
@@ -33,7 +34,7 @@ class User:
 
         mailTargetLoc = userLoc + '/mailTarget'
         if os.path.exists(mailTargetLoc):
-            self.mailTarget = tools.cleanInput(tools.ofile(mailTargetLoc), "\n")
+            self.mailTarget = int(tools.cleanInput(tools.ofile(mailTargetLoc), "\n"))
         else:
             self.mailTarget = 774796474
             tools.wfile(mailTargetLoc, self.mailTarget)
@@ -58,7 +59,7 @@ class Bot:
         self.replyDir = "assets/messages/replies/"
         self.initDir = "assets/messages/init/"
         self.loadUsers()
-        self.handler = events.EventHandler(self.updater, "assets/", self.initDir)
+        self.eventHandler = events.EventHandler(self.updater, "assets/", self.initDir)
 
     def __str__(self):
         return self.bot.getMe()
@@ -69,6 +70,7 @@ class Bot:
         self.states = {} # state of each users session
         userIds = os.listdir('users')
         for id in userIds:
+            id = int(id)
             user = User(id)
             self.users[id] = user
             self.states[id] = st.default
@@ -80,7 +82,7 @@ class Bot:
             msg, state = reply.loadMsg() # how will we make sure it is
         elif state is st.sendMessage:
             delivery = dt.datetime.now() + dt.timedelta(hours=5)
-            self.handler.addEvent((delivery, user.mailTarget, 'msg', text))
+            self.eventHandler.addEvent((delivery, user.mailTarget, 'msg', text))
             msg = "Message will be sent! *HONK*"
             state = st.default
         elif state is st.reminder:
@@ -91,7 +93,7 @@ class Bot:
             state = st.default
 
         if state is st.cancelMessage:
-            success = self.handler.cancelEvent(user.mailTarget,  'msg')
+            success = self.eventHandler.cancelEvent(user.mailTarget,  'msg')
             if not success:
                 msg = "No message to delete you silly goose"
             state = st.default
@@ -101,10 +103,12 @@ class Bot:
             state = st.default
         return msg, state
 
-    def handle(self, msg):
-        """Handles message sent to goose bot."""
-        content_type, chat_type, chat_id = telepot.glance(msg)
-        print(content_type, chat_type, chat_id)
+    def msgHandle(self, update, context):
+        """Handles text message sent to goose bot."""
+        msg = update.message.text
+        chat_id=update.effective_chat.id
+        print(type(msg))
+        print(type(chat_id))
 
         if chat_id in self.users:
             self.users[chat_id].uChatCount()
@@ -114,24 +118,24 @@ class Bot:
             self.users[chat_id] = user
             # add intro message to arrive soon
 
-        if content_type == "text":
-            text = msg["text"]
-            msg, state = self.reply(user, text)
-            self.bot.sendMessage(user.id, msg)
-            self.states[user.id] = state
+        reply, state = self.reply(user, msg)
+        self.states[user.id] = state
+        context.bot.send_message(chat_id, reply)
 
     def start(self, update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
         # https://github.com/python-telegram-bot/python-telegram-bot/wiki/Transition-guide-to-Version-12.0
         # telegram.Message.date? Or should I keep universal as to potentially support other platforms?
 
-    def handler(self):
+    def msgHandler(self):
         """Starts the program to listen"""
         dispatcher = self.updater.dispatcher
-        textHandler = telegram.ext.MessageHandler(telegram.ext.filters.text, self.start)
+        textHandler = telegram.ext.MessageHandler(telegram.ext.filters.Filters.text, self.msgHandle)
         # start_handler = telegram.ext.CommandHandler('start', self.start)
         dispatcher.add_handler(textHandler)
         # need catch all
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                             level=logging.INFO) # turn into its own class, save to file
         self.updater.start_polling()
         # do you want me to send this image?
         # MessageLoop(self.bot, self.handle).run_as_thread()
@@ -144,8 +148,8 @@ def run():
     # way to handle when telegram cuts it off for a bit
     token = "1165408473:AAFbR7nslY9WPWAx5H3AcOk5Klrf3-9Lp5E"
     goose = Bot(token, "assets/messages/replies/~funcKey", "assets/messages/replies/~translationKey")
-    print(goose.handler.df)
-    goose.handler()
+    print(goose.eventHandler.df)
+    goose.msgHandler()
 
 if __name__ == "__main__":
     run()
