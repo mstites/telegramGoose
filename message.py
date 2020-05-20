@@ -2,6 +2,9 @@ import tools
 import os
 import random
 import state as st
+import logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+level=logging.INFO)
 
 class Message:
     def __init__(self, msgDir, request):
@@ -72,6 +75,7 @@ class Reply(Action):
 
     def checkTranslations(self, text):
         """Check for any preformed messages in translation key"""
+        text = cleanInput
         words = text.split() # how does this handle /n
         # should have a way to clean that does not clean spaces
         searched = []

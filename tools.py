@@ -1,13 +1,11 @@
 import string
+import logging
 def ofile(location):
     with open(location, "r") as file:
         return file.read()
 
 def wfile(location, data):
     """Write file"""
-    # with open(location, "w") as file:
-    #     file.write(data)
-    #     file.flush()
     file = open(location, "w")
     file.write(str(data))
     file.flush()

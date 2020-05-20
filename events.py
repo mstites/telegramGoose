@@ -4,7 +4,9 @@ import pandas as pd
 import state as st
 import message as ms
 import os
-
+import logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+level=logging.INFO)
 class Event:
     def __init__(self, info, dir):
         self.time = info[0]
@@ -31,30 +33,42 @@ class Event:
         #     self.content = self.content # probably do not need this elif at
         #     # all then
 
-class EventHandler:
-    """Handle events"""
-    def __init__(self, bot, dir, initDir):
-        """bot: bot object
-        dir: directory containing storage for messages and dataframe
-        initDir: Initial message folder"""
-        self.dir = dir
-        self.initDir = initDir
-        self.df = self.readData("events.hdf")
-        self.loadBotEvents("~events")
-        self.bot = bot
+class EventDataFrame:
+    def __init__(self, loc, eventsLoc):
+        """Location of file"""
+        self.loc = loc
+        self.eventsLoc = eventsLoc
+        self.data = self.readData()
+        self.loadBotEvents()
 
-    def readData(self, fileName):
+    def readData(self):
         """Read dataframe from disk, or create it if it does not exist"""
-        self.loc = self.dir + fileName
         if os.path.exists(self.loc):
-            return pd.read_hdf(self.loc, 'df')
+                return pd.read_pickle(self.loc)
         else: # initialize
             columns = ['time', 'user', 'action', 'content']
             return pd.DataFrame(columns = columns)
 
-    def parseEventsFile(self, loc):
+    def sortSave(self):
+        self.data = self.data.sort_values(by='time')
+        self.data = self.data.reset_index(drop = True)
+        self.data.to_pickle(self.loc, protocol=4) # save
+
+    def removeEvent(self, eventLoc):
+        """Remove event from dataframe"""
+        self.data = self.data.drop(eventLoc)
+        self.sortSave()
+
+    def addEvent(self, eventInfo):
+        """Add event to event dataframe
+        eventInfo: tuple(time, target, action, content)"""
+        row = self.makeRow(eventInfo)
+        self.data = self.data.append(row, ignore_index=True)
+        self.sortSave()
+
+    def _parseEventsFile(self):
         """Parse events file, erase events, and return event list objects"""
-        file = tools.ofile(loc)
+        file = tools.ofile(self.eventsLoc)
         lines = file.splitlines()
         newFile= []
         events = []
@@ -73,14 +87,12 @@ class EventHandler:
                 events.append(line)
 
         newFile = ('\n'.join(map(str, newFile)))
-        tools.wfile(loc, newFile) # delete events from file, they are loaded
+        tools.wfile(self.eventsLoc, newFile) # delete events from file, they are loaded
         return events
 
-
-    def loadBotEvents(self, fileName):
+    def loadBotEvents(self):
         """Load bot events and add them to the dataframe"""
-        loc = self.dir + fileName
-        events = self.parseEventsFile(loc)
+        events = self._parseEventsFile()
         for event in events:
             time = dt.datetime(int(event[2]), int(event[0]), int(event[1]), int(event[3]), int(event[4]))
             # YEAR, MONTH, DAY, HOUR, MINUTE
@@ -88,26 +100,20 @@ class EventHandler:
             content = tools.ofile(contentLoc)
             self.addEvent((time, int(event[5]), event[6], content))
 
-    def sortSave(self):
-        self.df = self.df.sort_values(by='time')
-        self.df = self.df.reset_index(drop = True)
-        self.df.to_hdf(self.loc, 'df') # save
-
-    def removeEvent(self, loc):
-        """Remove event from dataframe"""
-        self.df = self.df.drop(loc)
-        self.sortSave()
-
-    def addEvent(self, eventInfo):
-        """Add event to event dataframe
-        eventInfo: tuple(time, target, action, content)"""
-        row = self.makeRow(eventInfo)
-        self.df = self.df.append(row, ignore_index=True)
-        self.sortSave()
+class EventHandler(EventDataFrame):
+    """Handle events"""
+    def __init__(self, bot, dir, initDir):
+        """bot: bot object
+        dir: directory containing storage for messages and dataframe
+        initDir: Initial message folder"""
+        self.bot = bot
+        self.dir = dir
+        self.initDir = initDir
+        super().__init__(dir + "events.pkl", dir + "~events") # load data
 
     def cancelEvent(self, user, action):
         """Cancel a previously requested event"""
-        filtered = self.df[(self.df.user == user) & (self.df.action == action)]
+        filtered = self.data[(self.data.user == user) & (self.data.action == action)]
         filtered = filtered.reset_index()
         if filtered.empty:
             return False
@@ -120,7 +126,7 @@ class EventHandler:
         """Run an event"""
         if ((event['action'] == 'msg') or (event['action'] == 'botmsg')):
             self.bot.sendMessage(event['user'], event['content'])
-            print('Running event: ', event)
+            logging.info('Running event: ' + event)
 
     def makeRow(self, eventInfo):
         """Make row from event object.
@@ -128,17 +134,18 @@ class EventHandler:
         """
         event = Event(eventInfo, self.initDir)
         event.process()
-        print(event)
+        logging.debug(event)
         return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
 
-
-    def checkTimeEvents(self):
+    def getEvent(self):
         # check if it is time to send any events
-        if self.df.empty: # no reason to checks
-            return
+        if self.data.empty: # no reason to check, no event
+            return None
         else:
             currTime = dt.datetime.now()
-            nextEvent = self.df.iloc[0]
+            nextEvent = self.data.iloc[0]
             if currTime > nextEvent['time']: # activate event
-                self.runEvent(nextEvent)
-                self.removeEvent(0)
+                self.removeEvent(0) # deling may not allow to be ran?
+                return (nextEvent(1), nextEvent(2), nextEvent(3)) # (user, action, content)
+            else:
+                return None
