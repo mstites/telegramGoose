@@ -3,8 +3,15 @@ import datetime as dt
 import pandas as pd
 import state as st
 import message as ms
+import random
 import os
 import logging
+
+def seriesToEvent(series, dir):
+    """Convert a series to an event"""
+    info = (series['time'], series['user'],
+    series['action'], series['content'])
+    return Event(info, dir)
 
 class Event:
     def __init__(self, info, dir):
@@ -18,19 +25,36 @@ class Event:
         return str((self.time, self.target, self.action, self.content))
 
     def isMsg(self):
-        if self.action == 'msg':
+        if (self.action == 'msg'):
             return True
         else:
             return False
 
+    def isBotMsg(self):
+        if (self.action == 'botmsg'):
+            return True
+        else:
+            return False
+
+    def isImg(self):
+        if (self.action == 'img'):
+            return True
+        else:
+            return False
+
+    def isGooseImg(self):
+            if self.action == 'gooseimg':
+                return True
+            else:
+                return False
+
     def process(self):
         if self.isMsg():
             opener = ms.Action(self.dir, 'delivery')
-            openMsg = opener.open()
-            self.content = openMsg + "\n" + self.content + "\n"
-        # elif: self.isBotMsg():
-        #     self.content = self.content # probably do not need this elif at
-        #     # all then
+            self.content = opener.open() + "\n" + self.content + "\n"
+        elif self.isGooseImg():
+            sel = random.choice(os.listdir(self.content))
+            self.content = self.content + sel
 
 class EventDataFrame:
     def __init__(self, loc, eventsLoc):
@@ -123,9 +147,19 @@ class EventHandler(EventDataFrame):
 
     def runEvent(self, event):
         """Run an event"""
-        if ((event['action'] == 'msg') or (event['action'] == 'botmsg')):
-            self.bot.sendMessage(event['user'], event['content'])
-            logging.info('Running event: ' + event)
+        if event.isMsg() or event.isBotMsg():
+            self.bot.sendMessage(event.target, event.content)
+            self.removeEvent(0)
+        elif event.isImg():
+            self.bot.sendImage(event.target, event.content)
+            self.removeEvent(0)
+        elif event.isGooseImg():
+            self.bot.sendImage(event.target, event.content)
+            time = event['time'] + dt.timedelta(days=random.randint(3, 9))
+            self.addEvent(time, event.target, event.action, "assets/img/geese/")    # schedule next goose event
+            self.removeEvent(0)
+        logging.info('Running event: ' + str(event))
+
 
     def makeRow(self, eventInfo):
         """Make row from event object.
@@ -136,15 +170,15 @@ class EventHandler(EventDataFrame):
         logging.debug(event)
         return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
 
+
     def getEvent(self):
-        # check if it is time to send any events
+        """Check if it is time to send any events."""
         if self.data.empty: # no reason to check, no event
             return None
         else:
             currTime = dt.datetime.now()
-            nextEvent = self.data.iloc[0]
-            if currTime > nextEvent['time']: # activate event
-                self.removeEvent(0) # deling may not allow to be ran?
-                return (nextEvent(1), nextEvent(2), nextEvent(3)) # (user, action, content)
+            next = self.data.iloc[0]
+            if currTime > next['time']: # activate event
+                return seriesToEvent(next, self.dir)
             else:
                 return None

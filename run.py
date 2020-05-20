@@ -56,6 +56,7 @@ class Bot:
         token: token value for controlling bot
         """
         self.token = token
+        self.bot = telegram.Bot(token)
         self.loadUsers()
         # self.eventHandler = events.EventHandler(self.updater, "assets/", self.initDir)
 
@@ -73,10 +74,22 @@ class Bot:
             self.users[id] = user
             self.userStates[id] = st.default
 
-    def sendMessage(self, context, user, msg):
+    def sendMessage(self, user, msg):
         """Send a message from the bot :)"""
-        context.bot.send_message(user, msg)
+        self.bot.send_message(user, msg)
         logging.info(str(user) + ": " + msg)
+
+    def sendImage(self, user, photoLoc):
+        """Send an image from the bot :)"""
+        logging.info('Sending image?')
+        photo = open((photoLoc), 'rb')
+        self.bot.send_photo(user, photo)
+
+    def sendVideo(self, user, videoLoc):
+        pass
+
+    def sendVoice(self, user, voiceLoc):
+        pass
 
 class botManager:
     """Handles bot updates and actions"""
@@ -86,7 +99,7 @@ class botManager:
         self.updater = telegram.ext.Updater(self.bot.token, use_context=True)
         self.replyDir = "assets/messages/replies/"
         self.initDir = "assets/messages/init/"
-        self.eventHandler = events.EventHandler(self.updater, eventDir, self.initDir)
+        self.eventHandler = events.EventHandler(self.bot, eventDir, self.initDir)
         self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey, list = True))
         self.eventDir = eventDir
 
@@ -96,16 +109,12 @@ class botManager:
         logging.info("Starting checking events")
         while 1:
             event = self.eventHandler.getEvent()
-            logging.debug("Checking event, event = " + event)
+            logging.debug("Checking event, event = " + str(event))
             if event == None:
                 continue
             else:
                 logging.info(self.eventHandler.data)
-                user, action, content = event
-                if ((action == "msg") or (action == "botmsg")):
-                    self.bot.sendMessage(user, content)
-                else:
-                    self.log.error("")
+                self.eventHandler.runEvent(event)
             time.sleep(10)
 
     def checkMessages(self, dispatcher):
@@ -168,7 +177,7 @@ class botManager:
             return msg, state
         reply, state = stateHandler(self, user, msg)
         self.bot.userStates[user.id] = state
-        self.bot.sendMessage(context, chat_id, reply)
+        self.bot.sendMessage(chat_id, reply)
 
 def run():
     # way to handle when telegram cuts it off for a bit
