@@ -5,8 +5,7 @@ import state as st
 import message as ms
 import os
 import logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-level=logging.INFO)
+
 class Event:
     def __init__(self, info, dir):
         self.time = info[0]

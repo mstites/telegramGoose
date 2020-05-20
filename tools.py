@@ -14,7 +14,9 @@ def wfile(location, data):
 def cleanInput(text, toStrip = string.punctuation + string.digits + " "):
     """Cleans user input
     toStrip = characters to remove"""
-    cleanText = text.translate(str.maketrans("", "", toStrip))
+    logging.debug("stripping:" + toStrip)
+    cleanText = text.translate(str.maketrans('', '', toStrip))
+    # cleanText = ''.join(char for char in text if not char in toStrip)
     return cleanText.lower()
 
 def loadKey (loc):
