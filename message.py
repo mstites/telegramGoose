@@ -1,9 +1,9 @@
 import tools
 import os
-import random
 import state as st
 import string
 import logging
+import random
 
 class Message:
     def __init__(self, msgDir, request):
@@ -24,10 +24,8 @@ class Message:
 
     def randSel(self):
         """Select random message according to message directory"""
-        messages = os.listdir(self.msgDir + self.request)
-        sel = random.randrange(len(messages))
-        fileLoc = self.msgDir + self.request + '/' + str(sel)
-        return fileLoc
+        file = random.choice(os.listdir(self.msgDir + self.request))
+        return self.msgDir + self.request + "/" + file
 
     def isAction(self):
         """Check if request is action"""
@@ -95,7 +93,7 @@ class Reply(Action):
         if matches:
             translation = max(matches, key=matches.get)
             tmatch = matches[translation]
-            logging.info('Translation: ' + translation + '      Matches: '+ tmatch)
+            logging.info('Translation: ' + translation + '      Matches: '+ str(tmatch))
             if tmatch > 1:
                 return translation
             else: # too low likelines

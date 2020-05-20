@@ -1,24 +1,22 @@
 To do:
-1. Clean input for decoding messages (caps, punctuation, etc)
-3. Image events (when one is sent, schedule the next)
-4. More advanced message recognition system
-5. How are you doing?
+1. Image events (when one is sent, schedule the next)
+2. More advanced message recognition system
+3. How are you doing?
+4. Change events df to have attributes column. This way can add tags (eg: recurring (with time period), caption: CONTENT, random selection, from bot: T/F (to remove isBotMsg)) - this could be dictionary
+5. Change from isGooseImg to if recurring, random selection
 
 Expansion content:
 * Random honks
 * Pets
 * Fun facts (bi)
 * Send positivity
+* Send messages w/ images -> need a way to parse images seperately from text? can the text just be made into a seperate item?
 * Reminder system
-* Disable adding to groups
 
 Other:
-* Explain folder structure (keys)
-* logs -> store all the variable changes as txt
-* Add ability to take commands (eg: reboot, load events) -> take user input in loop
-* Handeling mispellings
-* Disable adding to groups
 * Amazon echo like: https://opensource.com/article/16/11/open-source-amazon-echo-projects
+* Custom sticker pack
+* Be able to send more than just text -> delay this goal
 
 Reminder system:
 weeks, get number before
