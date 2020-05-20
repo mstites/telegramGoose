@@ -2,9 +2,8 @@ import tools
 import os
 import random
 import state as st
+import string
 import logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-level=logging.INFO)
 
 class Message:
     def __init__(self, msgDir, request):
@@ -15,7 +14,7 @@ class Message:
         """Load message from assets and return as string"""
         location = self.msgDir + self.request
         if os.path.exists(location) is False:
-            print('ERROR: Message path does not exist')
+            logging.ERROR('Message path does not exist')
             return "I could not find the message :("
         if os.path.isdir(location):
             # get file location
@@ -75,9 +74,9 @@ class Reply(Action):
 
     def checkTranslations(self, text):
         """Check for any preformed messages in translation key"""
-        text = cleanInput
-        words = text.split() # how does this handle /n
-        # should have a way to clean that does not clean spaces
+        text = tools.cleanInput(text, string.punctuation + string.digits)
+        logging.debug('Translated text: ' + text)
+        words = text.split()
         searched = []
         matches = {}
         while words:
@@ -96,7 +95,7 @@ class Reply(Action):
         if matches:
             translation = max(matches, key=matches.get)
             tmatch = matches[translation]
-            print('translation: ', translation, tmatch)
+            logging.info('Translation: ' + translation + '      Matches: '+ tmatch)
             if tmatch > 1:
                 return translation
             else: # too low likelines
@@ -116,7 +115,7 @@ class Reply(Action):
                 return translation
             else:
                 # check chatterbox
-                print("chatterbox")
+                logging.info('Pass to chatterbox')
                 return None
 
     def loadMsg(self):

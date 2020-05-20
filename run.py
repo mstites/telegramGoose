@@ -10,9 +10,9 @@ import events
 import message as ms
 import threading
 import logging
-
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 level=logging.INFO)
+
 class User:
     def __init__(self, id):
         self.id =  id
@@ -96,7 +96,7 @@ class botManager:
         logging.info("Starting checking events")
         while 1:
             event = self.eventHandler.getEvent()
-            logging.debug("Checking event, event = ", event)
+            logging.debug("Checking event, event = " + event)
             if event == None:
                 continue
             else:
