@@ -91,17 +91,15 @@ class EventDataFrame:
 
     def loadBotEvents(self):
         """Load bot events and add them to the dataframe"""
-        header = pd.read_csv(self.eventsLoc, nrows=4)
-        print(header)
-        df = pd.read_csv(self.eventsLoc, skiprows=4)
-        print(df)
+        header = pd.read_csv(self.eventsLoc, nrows=4, sep=";")
+        df = pd.read_csv(self.eventsLoc, skiprows=4, sep=";")
         for index, row in df.iterrows():
             date = list(map(int, row['Date'].split("-")))
             time = list(map(int, row['Time'].split("-")))
             eTime = dt.datetime(date[2], date[0], date[1], time[0], time[1])
             # YEAR, MONTH, DAY, HOUR, MINUTE
-            self.addEvent((eTime, int(row['UserID']), 'botmsg', row['Message']))
-        header.to_csv(self.eventsLoc, index=False)
+            self.addEvent((eTime, int(row['UserID']), row['Type'], row['Content']))
+        header.to_csv(self.eventsLoc, index=False, sep=";")
 
 
 class EventHandler(EventDataFrame):
