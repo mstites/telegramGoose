@@ -14,7 +14,6 @@ dta
 *.dta
 *.zip
 *.hdf5
-*.csv
 anes_timeseries_cdf_rawdata.txt
 
 pyc
