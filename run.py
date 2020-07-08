@@ -98,7 +98,7 @@ class botManager:
         self.initDir = "assets/messages/init/"
         self.eventHandler = events.EventHandler(self.bot, eventDir, self.initDir)
         self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey, list = True))
-        self.eventDir = eventDir
+        # self.eventDir = eventDir
 
     def _stateHandler(self, user, text):
         """State handler for user message"""
