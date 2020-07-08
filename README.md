@@ -26,7 +26,7 @@ File notation notes:
 * The first value in every line is the file location
 * Items on the rest of the line are keywords or inputs for that value
 * "#" is a comment
-* () is the symbol for function, if these outputs are activated, an action will be ran. Adding more functions to the bot will require python code modification, likely in the reply method in run.py.
+* "()" is the symbol for function, if these outputs are activated, an action will be ran. Adding more functions to the bot will require python code modification, likely in the reply method in run.py
 
 #### Modifying the messages:
 To modify the messages sent, navigate to the directory/file indicated in the first value of the relevant line in the key file. Modifying this documents will change the bot's output text.
@@ -34,17 +34,13 @@ To modify the messages sent, navigate to the directory/file indicated in the fir
 A note on folders and randomness:
 Folders with the name of the output in the key file have a random message, with the random messages contained within. The messages inside these folders must be numbered starting from 0 and going up.
 
-
 ### Adding events:
-To manually load bot initiated events into the database, you'll need to modify the events file, which by default is located at assets/~events.
+To manually load bot initiated events into the database, you'll need to modify assets/newEvents.csv
 
-To add an event, enter it in the following format on a new line (example below):
-DATE, 24 HOUR TIME, USER, TYPE, FILE
-5-16-2020, 21:13, ***REMOVED***, botmsg, goodnight/516
-
-In addition to adding the event, you will of course need to create the message in the specified location.
+To add an event, enter it on a new line following the example format in the file. Save the csv using ";" as a separator.
 
 Notes:
-* "#" is a comment
-* dir specifies the default directory for these event messages. The full path of the message is this dir + the file path specified in the line item.
-* This document will be cleared as soon as the bot is ran and the information will be stored in the pandas database.
+* Content field
+  * Text messages: Put the message to be sent, no semicolons allowed
+  * Images: Indicate the directory or file where the image is stored
+* This document will be cleared as soon as the bot is ran and the information will be stored in the pandas dataframe.
