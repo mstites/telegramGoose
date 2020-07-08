@@ -36,7 +36,7 @@ class Event:
     def isImgR(self): # recurring image
         return self.action == 'imgR'
 
-    def process(self):
+    def loadContent(self):
         """Preprocessing to update content to item"""
         if self.isMsg():
             opener = ms.Action(self.dir, 'delivery')
@@ -45,7 +45,7 @@ class Event:
             sel = random.choice(os.listdir(self.content))
             self.content = self.content + sel
 
-class EventDataFrame:
+class EventDF:
     def __init__(self, loc, eventsLoc):
         """Location of file"""
         self.loc = loc
@@ -91,7 +91,7 @@ class EventDataFrame:
         header.to_csv(self.eventsLoc, index=False, sep=";")
 
 
-class EventHandler(EventDataFrame):
+class EventHandler(EventDF):
     """Handle events"""
     def __init__(self, bot, dir, initDir):
         """bot: bot object
@@ -132,7 +132,7 @@ class EventHandler(EventDataFrame):
         """Make row from event object.
         eventContent: tuple(time, target, action, content)"""
         event = Event(eventInfo, self.initDir)
-        event.process()
+        event.loadContent()
         logging.debug(event)
         return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
 
