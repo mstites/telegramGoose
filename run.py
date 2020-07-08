@@ -20,7 +20,6 @@ class User:
         self.load()
 
     def __str__(self):
-        # return user id, number of messages, stored messages ,etc
         return str((self.id, self.msgCount, self.mailTarget))
 
     def load(self):
@@ -95,7 +94,6 @@ class botManager:
     """Handles bot updates and actions"""
     def __init__(self, bot, rFuncKey, rTransKey, eventDir):
         self.bot = bot
-        # THE ABOVE THREE SHOULD LOAD INTO A MESSAGE OBJECT THAT IS CALLED EVERY TIME A REPLY IS NEEDED
         self.updater = telegram.ext.Updater(self.bot.token, use_context=True)
         self.replyDir = "assets/messages/replies/"
         self.initDir = "assets/messages/init/"
@@ -103,26 +101,59 @@ class botManager:
         self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey, list = True))
         self.eventDir = eventDir
 
+    def _stateHandler(self, user, text):
+        """State handler for user message"""
+        state = self.bot.userStates[user.id]
+        if state is st.default:
+            reply = ms.Reply(self.replyDir, self.replyKeys, text)
+            msg, state = reply.loadMsg() # how will we make sure it is
+        elif state is st.sendMessage:
+            delivery = dt.datetime.now() + dt.timedelta(hours=5)
+            self.eventHandler.addEvent((delivery, user.mailTarget, 'msg', text))
+            msg = "Message will be sent! *HONK*"
+            state = st.default
+        if state is st.cancelMessage:
+            success = self.eventHandler.cancelEvent(user.mailTarget,  'msg')
+            if not success:
+                msg = "No message to delete you silly goose"
+            state = st.default
+        elif state is st.checkIn:
+            "I am hearing how you are doing, though am not able to process it quite yet."
+            state = st.default
+        return msg, state
+
+    def _textHandler(self, update, context):
+        """Handles text message sent to goose bot."""
+        msg = update.message.text
+        chat_id=update.effective_chat.id
+        if chat_id in self.bot.users:
+            self.bot.users[chat_id].uChatCount()
+            user = self.bot.users[chat_id]
+        else: # create user
+            user = User(chat_id)
+            self.bot.users[chat_id] = user
+        reply, state = self._stateHandler(self, user, msg)
+        self.bot.userStates[user.id] = state
+        self.bot.sendMessage(chat_id, reply)
 
     def checkEvents(self):
-        """Check for events to activate"""
+        """Check for events to activate from the eventsDF"""
         logging.info("Starting checking events")
         while 1:
             event = self.eventHandler.getEvent()
             logging.debug("Checking event, event = " + str(event))
-            if event == None:
-                continue
-            else:
+            if event != None:
                 logging.info(self.eventHandler.data)
                 self.eventHandler.runEvent(event)
             time.sleep(10)
 
     def checkMessages(self, dispatcher):
+        """Start updater to wake bot when receiving message"""
         logging.info("Starting checking messages")
         self.updater.start_polling()
 
     def checkCommands(self):
-        """Check for terminal input from admin"""
+        """Check for terminal input"""
         logging.info("Starting to check for commands")
         cmd = input("")
         if cmd == "quit":
@@ -138,56 +169,21 @@ class botManager:
         dispatcher = self.updater.dispatcher
         textHandler = telegram.ext.MessageHandler(telegram.ext.filters.Filters.text, self._textHandler)
         dispatcher.add_handler(textHandler)
+        # create threads
         cmdHandler = threading.Thread(target=self.checkCommands)
         eventHandler = threading.Thread(target=self.checkEvents, daemon=True)
         msgHandler = threading.Thread(target=self.checkMessages, args=(dispatcher,), daemon=True)
+        # start threads
         cmdHandler.start()
         eventHandler.start()
         msgHandler.start()
 
-    def _textHandler(self, update, context):
-        """Handles text message sent to goose bot."""
-        msg = update.message.text
-        chat_id=update.effective_chat.id
-        if chat_id in self.bot.users:
-            self.bot.users[chat_id].uChatCount()
-            user = self.bot.users[chat_id]
-        else: # create user
-            user = User(chat_id)
-            self.bot.users[chat_id] = user
-        def stateHandler(self, user, text):
-            state = self.bot.userStates[user.id]
-            if state is st.default:
-                reply = ms.Reply(self.replyDir, self.replyKeys, text)
-                msg, state = reply.loadMsg() # how will we make sure it is
-            elif state is st.sendMessage:
-                delivery = dt.datetime.now() + dt.timedelta(hours=5)
-                self.eventHandler.addEvent((delivery, user.mailTarget, 'msg', text))
-                msg = "Message will be sent! *HONK*"
-                state = st.default
-            if state is st.cancelMessage:
-                success = self.eventHandler.cancelEvent(user.mailTarget,  'msg')
-                if not success:
-                    msg = "No message to delete you silly goose"
-                state = st.default
-            elif state is st.checkIn:
-                "I am hearing how you are doing, though am not able to process it quite yet."
-                # analyze how are you question
-                state = st.default
-            return msg, state
-        reply, state = stateHandler(self, user, msg)
-        self.bot.userStates[user.id] = state
-        self.bot.sendMessage(chat_id, reply)
-
 def run():
-    # way to handle when telegram cuts it off for a bit
     token = "1165408473:AAFbR7nslY9WPWAx5H3AcOk5Klrf3-9Lp5E"
     goose = Bot(token)
-    gooseManager = botManager(goose, "assets/messages/replies/~funcKey", "assets/messages/replies/~translationKey", "assets/")
+    gooseManager = botManager(goose, "assets/messages/replies/~funcKey",
+    "assets/messages/replies/~translationKey", "assets/")
     gooseManager.start()
-    print(gooseManager.eventHandler.data)
-    # gooseManager.update()
+
 if __name__ == "__main__":
     run()
-
-    # restart on error
