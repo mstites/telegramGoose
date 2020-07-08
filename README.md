@@ -25,7 +25,7 @@ By default, the function event key file is located at assets/messages/replies/~f
 File notation notes:
 * The first value in every line is the file location
 * Items on the rest of the line are keywords or inputs for that value
-* # is a comment
+* "#" is a comment
 * () is the symbol for function, if these outputs are activated, an action will be ran. Adding more functions to the bot will require python code modification, likely in the reply method in run.py.
 
 #### Modifying the messages:
@@ -45,6 +45,6 @@ DATE, 24 HOUR TIME, USER, TYPE, FILE
 In addition to adding the event, you will of course need to create the message in the specified location.
 
 Notes:
-* # is a comment
+* "#" is a comment
 * dir specifies the default directory for these event messages. The full path of the message is this dir + the file path specified in the line item.
 * This document will be cleared as soon as the bot is ran and the information will be stored in the pandas database.
