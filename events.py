@@ -91,7 +91,9 @@ class EventDataFrame:
 
     def loadBotEvents(self):
         """Load bot events and add them to the dataframe"""
-        df = pd.read_excel(self.eventsLoc, skiprows=4, usecols="A:D").dropna()
+        header = pd.read_csv(self.eventsLoc, nrows=4)
+        print(header)
+        df = pd.read_csv(self.eventsLoc, skiprows=4)
         print(df)
         for index, row in df.iterrows():
             date = list(map(int, row['Date'].split("-")))
@@ -99,8 +101,9 @@ class EventDataFrame:
             eTime = dt.datetime(date[2], date[0], date[1], time[0], time[1])
             # YEAR, MONTH, DAY, HOUR, MINUTE
             self.addEvent((eTime, int(row['UserID']), 'botmsg', row['Message']))
-            print(time)
-            
+        header.to_csv(self.eventsLoc, index=False)
+
+
 class EventHandler(EventDataFrame):
     """Handle events"""
     def __init__(self, bot, dir, initDir):
@@ -110,7 +113,7 @@ class EventHandler(EventDataFrame):
         self.bot = bot
         self.dir = dir
         self.initDir = initDir
-        super().__init__(dir + "events.pkl", dir + "newEvents.xlsx") # load data
+        super().__init__(dir + "events.pkl", dir + "newEvents.csv") # load data
 
     def cancelEvent(self, user, action):
         """Cancel a previously requested event"""
