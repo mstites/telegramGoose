@@ -25,24 +25,16 @@ class Event:
         return str((self.time, self.target, self.action, self.content))
 
     def isMsg(self):
-        if (self.action == 'msg'):
-            return True
-        return False
+        return self.action == 'msg'
 
     def isBotMsg(self):
-        if (self.action == 'botmsg'):
-            return True
-        return False
+        return self.action == 'botmsg'
 
     def isImg(self):
-        if (self.action == 'img'):
-            return True
-        return False
+        return self.action == 'img'
 
     def isImgR(self): # recurring image
-        if (self.action =='imgR'):
-            return True
-        return False
+        return self.action == 'imgR'
 
     def process(self):
         """Preprocessing to update content to item"""
