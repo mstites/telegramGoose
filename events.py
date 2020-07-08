@@ -89,40 +89,18 @@ class EventDataFrame:
         self.data = self.data.append(row, ignore_index=True)
         self.sortSave()
 
-    def _parseEventsFile(self):
-        """Parse events file, erase events, and return event list objects"""
-        file = tools.ofile(self.eventsLoc)
-        lines = file.splitlines()
-        newFile= []
-        events = []
-        for line in lines:
-            if line.startswith("#"):
-                newFile.append(line)
-            elif line.startswith("dir:"):
-                newFile.append(line)
-                line = line.strip("dir: ")
-                self.botEventsDir = line
-            else:
-                line = line.replace("-", ",") # only one seperator
-                line = line.replace(":", ",") # only one seperator
-                line = line.replace(" ", "") # strip whitespace
-                line = line.split(",")
-                events.append(line)
-
-        newFile = ('\n'.join(map(str, newFile)))
-        tools.wfile(self.eventsLoc, newFile) # delete events from file, they are loaded
-        return events
-
     def loadBotEvents(self):
         """Load bot events and add them to the dataframe"""
-        events = self._parseEventsFile()
-        for event in events:
-            time = dt.datetime(int(event[2]), int(event[0]), int(event[1]), int(event[3]), int(event[4]))
+        df = pd.read_excel(self.eventsLoc, skiprows=4, usecols="A:D").dropna()
+        print(df)
+        for index, row in df.iterrows():
+            date = list(map(int, row['Date'].split("-")))
+            time = list(map(int, row['Time'].split("-")))
+            eTime = dt.datetime(date[2], date[0], date[1], time[0], time[1])
             # YEAR, MONTH, DAY, HOUR, MINUTE
-            contentLoc = self.botEventsDir + event[7]
-            content = tools.ofile(contentLoc)
-            self.addEvent((time, int(event[5]), event[6], content))
-
+            self.addEvent((eTime, int(row['UserID']), 'botmsg', row['Message']))
+            print(time)
+            
 class EventHandler(EventDataFrame):
     """Handle events"""
     def __init__(self, bot, dir, initDir):
@@ -132,7 +110,7 @@ class EventHandler(EventDataFrame):
         self.bot = bot
         self.dir = dir
         self.initDir = initDir
-        super().__init__(dir + "events.pkl", dir + "~events") # load data
+        super().__init__(dir + "events.pkl", dir + "newEvents.xlsx") # load data
 
     def cancelEvent(self, user, action):
         """Cancel a previously requested event"""

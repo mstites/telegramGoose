@@ -16,7 +16,7 @@ The key difference between functions and replies is that functions use explicit 
 
 ### Customizing/adding function/reply events:
 Customizing or adding events is a similar process for these two types of events, there are just two major steps:
-1. Modify the key file (optional if you just want to custimize the sent message)
+1. Modify the key file (optional if you just want to customize the sent message)
 2. Add the message/messages
 
 #### Modifying the Key File (optional)
