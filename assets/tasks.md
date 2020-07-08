@@ -1,4 +1,6 @@
 To do:
+1. Implement events spreadsheet for adding new events (this could later be expanded to include the keys and such)
+2. Automatted load in of eventsMessages
 1. Image events (when one is sent, schedule the next)
 2. More advanced message recognition system
 3. How are you doing?
