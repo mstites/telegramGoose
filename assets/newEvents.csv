@@ -1,5 +1,5 @@
-Schedule messages to send to users;Unnamed: 1;Unnamed: 2;Unnamed: 3
-Time;UserID;Type;Message
-19-00;774796474;gooseimg;geese
-03-00;1011230417;msg;Goodnight! I hope you had a good day.
-Time;UserID;Type;Content
+Schedule messages to send to users;Unnamed: 1;Unnamed: 2;Unnamed: 3;Unnamed: 4
+Date;Time;UserID;Type;Message
+5-15-2020;19-00;774796474;botmsg;Good luck driving!
+5-16-2020;03-00;1011230417;botmsg;Goodnight! I hope you had a good day.
+Date;Time;UserID;Type;Content
