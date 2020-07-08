@@ -43,7 +43,7 @@ class User:
 
     def uChatCount(self):
         self.msgCount = int(self.msgCount) + 1
-        self.write() # should not do this all the time eventually?
+        self.write()
 
     def write(self):
         location = str(self.loc) + str(self.id) + "/msgCount"
@@ -57,7 +57,6 @@ class Bot:
         self.token = token
         self.bot = telegram.Bot(token)
         self.loadUsers()
-        # self.eventHandler = events.EventHandler(self.updater, "assets/", self.initDir)
 
     def __str__(self):
         return self.bot.getMe()
@@ -106,7 +105,7 @@ class botManager:
         state = self.bot.userStates[user.id]
         if state is st.default:
             reply = ms.Reply(self.replyDir, self.replyKeys, text)
-            msg, state = reply.loadMsg() # how will we make sure it is
+            msg, state = reply.loadMsg()
         elif state is st.sendMessage:
             delivery = dt.datetime.now() + dt.timedelta(hours=5)
             self.eventHandler.addEvent((delivery, user.mailTarget, 'msg', text))
@@ -118,7 +117,6 @@ class botManager:
                 msg = "No message to delete you silly goose"
             state = st.default
         elif state is st.checkIn:
-            "I am hearing how you are doing, though am not able to process it quite yet."
             state = st.default
         return msg, state
 
@@ -126,14 +124,14 @@ class botManager:
         """Handles text message sent to goose bot."""
         msg = update.message.text
         chat_id=update.effective_chat.id
-        if chat_id in self.bot.users:
+        if chat_id in self.bot.users: # user exists
             self.bot.users[chat_id].uChatCount()
             user = self.bot.users[chat_id]
         else: # create user
             user = User(chat_id)
             self.bot.users[chat_id] = user
-        reply, state = self._stateHandler(self, user, msg)
-        self.bot.userStates[user.id] = state
+        reply, state = self._stateHandler(self, user, msg) # get action
+        self.bot.userStates[user.id] = state # update state
         self.bot.sendMessage(chat_id, reply)
 
     def checkEvents(self):
