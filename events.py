@@ -42,17 +42,17 @@ class Event:
         else:
             return False
 
-    def isGooseImg(self):
-            if self.action == 'gooseimg':
-                return True
-            else:
-                return False
+    def isImgR(self): # recurring image
+        if (self.action =='imgR'):
+            return True
+        else:
+            return False
 
     def process(self):
         if self.isMsg():
             opener = ms.Action(self.dir, 'delivery')
             self.content = opener.open() + "\n" + self.content + "\n"
-        elif self.isGooseImg():
+        elif self.isImgR():
             sel = random.choice(os.listdir(self.content))
             self.content = self.content + sel
 
@@ -132,11 +132,13 @@ class EventHandler(EventDataFrame):
         elif event.isImg():
             self.bot.sendImage(event.target, event.content)
             self.removeEvent(0)
-        elif event.isGooseImg():
+        elif event.isImgR():
             self.bot.sendImage(event.target, event.content)
-            time = event['time'] + dt.timedelta(days=random.randint(3, 9))
-            self.addEvent(time, event.target, event.action, "assets/img/geese/")    # schedule next goose event
             self.removeEvent(0)
+            time = event.time + dt.timedelta(days=random.randint(3, 9))
+            print(time)
+            self.addEvent((time, event.target, event.action,
+            event.content[:event.content.rfind("/")]+"/"))   # schedule nextt reccurring image event
         logging.info('Running event: ' + str(event))
 
 

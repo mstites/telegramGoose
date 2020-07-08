@@ -81,7 +81,7 @@ class Bot:
 
     def sendImage(self, user, photoLoc):
         """Send an image from the bot :)"""
-        logging.info('Sending image?')
+        logging.info('Sending image')
         photo = open((photoLoc), 'rb')
         self.bot.send_photo(user, photo)
 

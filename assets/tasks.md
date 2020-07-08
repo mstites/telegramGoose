@@ -1,18 +1,17 @@
 To do:
-1. Implement events spreadsheet for adding new events (this could later be expanded to include the keys and such)
-2. Automatted load in of eventsMessages
-1. Image events (when one is sent, schedule the next)
+1. Add support for sending images
 2. More advanced message recognition system
 3. How are you doing?
 4. Change events df to have attributes column. This way can add tags (eg: recurring (with time period), caption: CONTENT, random selection, from bot: T/F (to remove isBotMsg)) - this could be dictionary
 5. Change from isGooseImg to if recurring, random selection
+6. Take file locations from being variables to just hard coded, that can stay the same
 
 Expansion content:
 * Random honks
 * Pets
 * Fun facts (bi)
 * Send positivity
-* Send messages w/ images -> need a way to parse images seperately from text? can the text just be made into a seperate item?
+* Send messages w/ images -> need a way to parse images separately from text? can the text just be made into a seperate item?
 * Reminder system
 
 Other:
@@ -32,11 +31,6 @@ Message recognition system:
 * One that matches most keywords
 * Create new version that inherits from Message
 * Then just use the msgopen from message to open
-
-Reorganizingc code:
-* Update classes
-* Check events function
-* msgkey class
 
 events.py:
 * New eventDf class. contains: readData, sortSave, removeEvent, addEvent
