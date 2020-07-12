@@ -1,5 +1,4 @@
 To do:
-1. Add support for sending images
 2. More advanced message recognition system
 3. How are you doing?
 4. Change events df to have attributes column. This way can add tags (eg: recurring (with time period), caption: CONTENT, random selection, from bot: T/F (to remove isBotMsg)) - this could be dictionary
@@ -10,6 +9,7 @@ Expansion content:
 * Random honks
 * Pets
 * Fun facts (bi)
+* Daily weather
 * Send positivity
 * Send messages w/ images -> need a way to parse images separately from text? can the text just be made into a seperate item?
 * Reminder system
