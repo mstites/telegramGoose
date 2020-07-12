@@ -25,30 +25,19 @@ class Event:
         return str((self.time, self.target, self.action, self.content))
 
     def isMsg(self):
-        if (self.action == 'msg'):
-            return True
-        else:
-            return False
+        return self.action == 'msg'
 
     def isBotMsg(self):
-        if (self.action == 'botmsg'):
-            return True
-        else:
-            return False
+        return self.action == 'botmsg'
 
     def isImg(self):
-        if (self.action == 'img'):
-            return True
-        else:
-            return False
+        return self.action == 'img'
 
     def isImgR(self): # recurring image
-        if (self.action =='imgR'):
-            return True
-        else:
-            return False
+        return self.action == 'imgR'
 
-    def process(self):
+    def loadContent(self):
+        """Preprocessing to update content to item"""
         if self.isMsg():
             opener = ms.Action(self.dir, 'delivery')
             self.content = opener.open() + "\n" + self.content + "\n"
@@ -56,7 +45,7 @@ class Event:
             sel = random.choice(os.listdir(self.content))
             self.content = self.content + sel
 
-class EventDataFrame:
+class EventDF:
     def __init__(self, loc, eventsLoc):
         """Location of file"""
         self.loc = loc
@@ -102,7 +91,7 @@ class EventDataFrame:
         header.to_csv(self.eventsLoc, index=False, sep=";")
 
 
-class EventHandler(EventDataFrame):
+class EventHandler(EventDF):
     """Handle events"""
     def __init__(self, bot, dir, initDir):
         """bot: bot object
@@ -128,38 +117,39 @@ class EventHandler(EventDataFrame):
         """Run an event"""
         if event.isMsg() or event.isBotMsg():
             self.bot.sendMessage(event.target, event.content)
-            self.removeEvent(0)
         elif event.isImg():
             self.bot.sendImage(event.target, event.content)
-            self.removeEvent(0)
         elif event.isImgR():
             self.bot.sendImage(event.target, event.content)
-            self.removeEvent(0)
             time = event.time + dt.timedelta(days=random.randint(3, 9))
+<<<<<<< HEAD
             print(event.time)
             self.addEvent((time, event.target, event.action,
             event.content[:event.content.rfind("/")]+"/"))   # schedule nextt reccurring image event
+=======
+            path = event.content[:event.content.rfind("/")]+"/"
+            self.addEvent((time, event.target, event.action, path))
+        self.removeEvent(0)
+>>>>>>> cc56ed79e97b8644fbdd4f33701fcf284e953818
         logging.info('Running event: ' + str(event))
 
 
     def makeRow(self, eventInfo):
         """Make row from event object.
-        eventContent: tuple(time, target, action, content)
-        """
+        eventContent: tuple(time, target, action, content)"""
         event = Event(eventInfo, self.initDir)
-        event.process()
+        event.loadContent()
         logging.debug(event)
         return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
 
 
     def getEvent(self):
         """Check if it is time to send any events."""
-        if self.data.empty: # no reason to check, no event
-            return None
-        else:
+        if !(self.data.empty): # data exists
             currTime = dt.datetime.now()
             next = self.data.iloc[0]
             if currTime > next['time']: # activate event
                 return seriesToEvent(next, self.dir)
             else:
                 return None
+        return None
