@@ -122,15 +122,9 @@ class EventHandler(EventDF):
         elif event.isImgR():
             self.bot.sendImage(event.target, event.content)
             time = event.time + dt.timedelta(days=random.randint(3, 9))
-<<<<<<< HEAD
-            print(event.time)
-            self.addEvent((time, event.target, event.action,
-            event.content[:event.content.rfind("/")]+"/"))   # schedule nextt reccurring image event
-=======
             path = event.content[:event.content.rfind("/")]+"/"
             self.addEvent((time, event.target, event.action, path))
         self.removeEvent(0)
->>>>>>> cc56ed79e97b8644fbdd4f33701fcf284e953818
         logging.info('Running event: ' + str(event))
 
 
