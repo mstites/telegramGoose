@@ -139,7 +139,7 @@ class EventHandler(EventDF):
 
     def getEvent(self):
         """Check if it is time to send any events."""
-        if !(self.data.empty): # data exists
+        if not self.data.empty: # data exists
             currTime = dt.datetime.now()
             next = self.data.iloc[0]
             if currTime > next['time']: # activate event
