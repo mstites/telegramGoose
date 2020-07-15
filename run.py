@@ -130,7 +130,7 @@ class botManager:
         else: # create user
             user = User(chat_id)
             self.bot.users[chat_id] = user
-        reply, state = self._stateHandler(self, user, msg) # get action
+        reply, state = self._stateHandler(user, msg) # get action
         self.bot.userStates[user.id] = state # update state
         self.bot.sendMessage(chat_id, reply)
 
