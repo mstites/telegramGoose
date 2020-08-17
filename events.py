@@ -6,11 +6,12 @@ import message as ms
 import random
 import os
 import logging
+import numpy as np
 
 def seriesToEvent(series, dir):
     """Convert a series to an event"""
     info = (series['time'], series['user'],
-    series['action'], series['content'])
+    series['action'], series['content'], series['recurring'])
     return Event(info, dir)
 
 class Event:
@@ -19,29 +20,18 @@ class Event:
         self.target = info[1]
         self.action = info[2]
         self.content = info[3]
+        self.recurring = info[4]
         self.dir = dir
 
     def __str__(self):
-        return str((self.time, self.target, self.action, self.content))
+        return str((self.time, self.target, self.action, self.content, self.recurring))
 
-    def isMsg(self):
-        return self.action == 'msg'
-
-    def isBotMsg(self):
-        return self.action == 'botmsg'
-
-    def isImg(self):
-        return self.action == 'img'
-
-    def isImgR(self): # recurring image
-        return self.action == 'imgR'
-
-    def loadContent(self):
-        """Preprocessing to update content to item"""
-        if self.isMsg():
+    def prepareSend(self):
+        """Preparing for sending by loading the specific information"""
+        if self.action == "userMsg": # add prefix
             opener = ms.Action(self.dir, 'delivery')
             self.content = opener.open() + "\n" + self.content + "\n"
-        elif self.isImgR():
+        elif os.path.isdir(self.dir): # load specific file
             sel = random.choice(os.listdir(self.content))
             self.content = self.content + sel
 
@@ -56,9 +46,9 @@ class EventDF:
     def readData(self):
         """Read dataframe from disk, or create it if it does not exist"""
         if os.path.exists(self.loc):
-                return pd.read_pickle(self.loc)
+            return pd.read_pickle(self.loc)
         else: # initialize
-            columns = ['time', 'user', 'action', 'content']
+            columns = ['time', 'user', 'action', 'content', 'recurring']
             return pd.DataFrame(columns = columns)
 
     def sortSave(self):
@@ -84,12 +74,18 @@ class EventDF:
         header = pd.read_csv(self.eventsLoc, nrows=4, sep=";")
         df = pd.read_csv(self.eventsLoc, skiprows=4, sep=";")
         for index, row in df.iterrows():
+            # load time
             date = list(map(int, row['Date'].split("-")))
             time = list(map(int, row['Time'].split("-")))
             eTime = dt.datetime(date[2], date[0], date[1], time[0], time[1])
-            # YEAR, MONTH, DAY, HOUR, MINUTE
-            self.addEvent((eTime, int(row['UserID']), row['Type'], row['Content']))
-        header.to_csv(self.eventsLoc, index=False, sep=";")
+            # load recurring
+            if row['Recurring'] == "na":
+                reccuring = np.nan
+            else:
+                recurring = tuple(map(int, row['Recurring'].split("-")))
+            # add event
+            self.addEvent((eTime, int(row['UserID']), row['Type'], row['Content'], recurring))
+        header.to_csv(self.eventsLoc, index=False, sep=";") # overwrite
 
 
 class EventHandler(EventDF):
@@ -116,26 +112,31 @@ class EventHandler(EventDF):
 
     def runEvent(self, event):
         """Run an event"""
-        if event.isMsg() or event.isBotMsg():
+        # schedule next event if recurring
+        if not event.recurring.isnan(): # recurring
+            next = random.randint(event.recurring[0], event.recurring[1])
+            time = event.time + dt.timedelta(days=next)
+            self.addEvent((time, event.target, event.action,
+            event.content, event.reccuring)) # same event, new time
+
+        # run event
+        event.preSend()
+        if event.action == "msg" or event.action == "userMsg":
             self.bot.sendMessage(event.target, event.content)
-        elif event.isImg():
-            self.bot.sendImage(event.target, event.content)
-        elif event.isImgR():
-            self.bot.sendImage(event.target, event.content)
-            time = event.time + dt.timedelta(days=random.randint(3, 9))
-            path = event.content[:event.content.rfind("/")]+"/"
-            self.addEvent((time, event.target, event.action, path))
+        elif event.action == "img":
+            seld.bot.sendImage(event.target, event.content)
+
+        # delete event
         self.removeEvent(0)
         logging.info('Running event: ' + str(event))
 
 
     def makeRow(self, eventInfo):
         """Make row from event object.
-        eventContent: tuple(time, target, action, content)"""
+        eventContent: tuple(time, target, action, content, recurring)"""
         event = Event(eventInfo, self.initDir)
-        event.loadContent()
         logging.debug(event)
-        return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content}
+        return {'time':event.time, 'user':event.target, 'action':event.action, 'content':event.content, 'recurring':event.recurring}
 
 
     def getEvent(self):
