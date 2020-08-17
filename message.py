@@ -46,8 +46,6 @@ class Action(Message):
             state = st.sendMessage
         elif self.request == "cancelMessage()":
             state = st.cancelMessage
-        elif self.request == "checkIn()":
-            state = st.checkIn
         else:
             state = st.default
         return state

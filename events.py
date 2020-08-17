@@ -62,6 +62,7 @@ class EventDF:
             return pd.DataFrame(columns = columns)
 
     def sortSave(self):
+        """Sort and save dataframe"""
         self.data = self.data.sort_values(by='time')
         self.data = self.data.reset_index(drop = True)
         self.data.to_pickle(self.loc, protocol=4) # save
@@ -139,7 +140,7 @@ class EventHandler(EventDF):
 
     def getEvent(self):
         """Check if it is time to send any events."""
-        if !(self.data.empty): # data exists
+        if not self.data.empty: # data exists
             currTime = dt.datetime.now()
             next = self.data.iloc[0]
             if currTime > next['time']: # activate event
