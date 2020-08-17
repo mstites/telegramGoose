@@ -116,8 +116,6 @@ class botManager:
             if not success:
                 msg = "No message to delete you silly goose"
             state = st.default
-        elif state is st.checkIn:
-            state = st.default
         return msg, state
 
     def _textHandler(self, update, context):
