@@ -31,7 +31,7 @@ class Event:
         if self.action == "userMsg": # add prefix
             opener = ms.Action(self.dir, 'delivery')
             self.content = opener.open() + "\n" + self.content + "\n"
-        elif os.path.isdir(self.dir): # load specific file
+        if self.action == "img" and os.path.isdir(self.dir): # load specific file
             sel = random.choice(os.listdir(self.content))
             self.content = self.content + sel
 
