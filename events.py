@@ -79,10 +79,8 @@ class EventDF:
             time = list(map(int, row['Time'].split("-")))
             eTime = dt.datetime(date[2], date[0], date[1], time[0], time[1])
             # load recurring
-            if row['Recurring'] == "na":
-                reccuring = (0,0)
-            else:
-                recurring = tuple(map(int, row['Recurring'].split("-")))
+            recurring = tuple()
+            recurring = tuple(map(int, row['Recurring'].split("-")))
             # add event
             self.addEvent((eTime, int(row['UserID']), row['Type'], row['Content'], recurring))
         header.to_csv(self.eventsLoc, index=False, sep=";") # overwrite
@@ -113,7 +111,7 @@ class EventHandler(EventDF):
     def runEvent(self, event):
         """Run an event"""
         # schedule next event if recurring
-        if event.recurring is not (0,0): # recurring
+        if event.recurring != (0,0): # recurring
             next = random.randint(event.recurring[0], event.recurring[1])
             time = event.time + dt.timedelta(days=next)
             self.addEvent((time, event.target, event.action,
@@ -123,7 +121,7 @@ class EventHandler(EventDF):
         if event.action == "msg" or event.action == "userMsg":
             self.bot.sendMessage(event.target, event.content)
         elif event.action == "img":
-            seld.bot.sendImage(event.target, event.content)
+            self.bot.sendImage(event.target, event.content)
 
         # delete event
         self.removeEvent(0)
