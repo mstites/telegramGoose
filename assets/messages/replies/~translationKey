@@ -6,4 +6,3 @@ greetings/morning: good, morning, good, morning
 greetings/hello: hello, hi, hey, hiya, yo, nice, see, you, evening, afternoon, hello, hi, hey, hiya, yo, nice, see, you, evening, afternoon, hello, hi, hey, hiya, yo, nice, see, you, evening, afternoon
 sendMessage(): can, you, send, message
 cancelMessage(): can, you, cancel, message
-checkIn(): how, do, you, do, how, have, you, been, how, are, you

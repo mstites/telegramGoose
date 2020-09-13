@@ -8,10 +8,12 @@ import state as st
 import tools
 import events
 import message as ms
+import numpy as np
 import threading
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-level=logging.INFO)
+level=logging.DEBUG)
+
 
 class User:
     def __init__(self, id):
@@ -98,7 +100,6 @@ class botManager:
         self.initDir = "assets/messages/init/"
         self.eventHandler = events.EventHandler(self.bot, eventDir, self.initDir)
         self.replyKeys = (tools.loadKeyDict(rFuncKey), tools.loadKeyDict(rTransKey, list = True))
-        # self.eventDir = eventDir
 
     def _stateHandler(self, user, text):
         """State handler for user message"""
@@ -108,15 +109,13 @@ class botManager:
             msg, state = reply.loadMsg()
         elif state is st.sendMessage:
             delivery = dt.datetime.now() + dt.timedelta(hours=5)
-            self.eventHandler.addEvent((delivery, user.mailTarget, 'msg', text))
+            self.eventHandler.addEvent((delivery, user.mailTarget, 'userMsg', text, np.nan))
             msg = "Message will be sent! *HONK*"
             state = st.default
         if state is st.cancelMessage:
-            success = self.eventHandler.cancelEvent(user.mailTarget,  'msg')
+            success = self.eventHandler.cancelEvent(user.mailTarget,  'userMsg')
             if not success:
                 msg = "No message to delete you silly goose"
-            state = st.default
-        elif state is st.checkIn:
             state = st.default
         return msg, state
 
@@ -144,6 +143,7 @@ class botManager:
                 logging.info(self.eventHandler.data)
                 self.eventHandler.runEvent(event)
             time.sleep(10)
+            logging.debug("Current event df = " + print(self.eventHandler))
 
     def checkMessages(self, dispatcher):
         """Start updater to wake bot when receiving message"""
