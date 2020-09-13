@@ -143,7 +143,6 @@ class botManager:
                 logging.info(self.eventHandler.data)
                 self.eventHandler.runEvent(event)
             time.sleep(10)
-            logging.debug("Current event df = " + print(self.eventHandler))
 
     def checkMessages(self, dispatcher):
         """Start updater to wake bot when receiving message"""
