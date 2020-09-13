@@ -1,5 +1,5 @@
 Schedule messages to send to users;Unnamed: 1;Unnamed: 2;Unnamed: 3;Unnamed: 4;Unnamed: 5
 Date;Time;UserID;Type;Message;Recurring
-5-15-2020;19-00;***REMOVED***;imgR;assets/img/geese/;3-8
-5-16-2020;03-00;***REMOVED***;botmsg;Goodnight! I hope you had a good day.;na
+5-15-2020;19-00;***REMOVED***;img;assets/img/geese/;3-8
+5-16-2020;03-00;***REMOVED***;msg;Goodnight! I hope you had a good day.;na
 Date;Time;UserID;Type;Content;Recurring
