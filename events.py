@@ -80,7 +80,7 @@ class EventDF:
             eTime = dt.datetime(date[2], date[0], date[1], time[0], time[1])
             # load recurring
             if row['Recurring'] == "na":
-                reccuring = np.nan
+                reccuring = (0,0)
             else:
                 recurring = tuple(map(int, row['Recurring'].split("-")))
             # add event
@@ -113,14 +113,13 @@ class EventHandler(EventDF):
     def runEvent(self, event):
         """Run an event"""
         # schedule next event if recurring
-        if not event.recurring.isnan(): # recurring
+        if event.recurring is not (0,0): # recurring
             next = random.randint(event.recurring[0], event.recurring[1])
             time = event.time + dt.timedelta(days=next)
             self.addEvent((time, event.target, event.action,
-            event.content, event.reccuring)) # same event, new time
-
+            event.content, event.recurring)) # same event, new time
         # run event
-        event.preSend()
+        event.prepareSend()
         if event.action == "msg" or event.action == "userMsg":
             self.bot.sendMessage(event.target, event.content)
         elif event.action == "img":
