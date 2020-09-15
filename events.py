@@ -142,7 +142,7 @@ class EventHandler(EventDF):
             currTime = dt.datetime.now()
             next = self.data.iloc[0]
             if currTime > next['time']: # activate event
-                return seriesToEvent(next, self.dir)
+                return seriesToEvent(next, self.initDir)
             else:
                 return None
         return None
