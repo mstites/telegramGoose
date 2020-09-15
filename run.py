@@ -8,7 +8,6 @@ import state as st
 import tools
 import events
 import message as ms
-import numpy as np
 import threading
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -109,7 +108,7 @@ class botManager:
             msg, state = reply.loadMsg()
         elif state is st.sendMessage:
             delivery = dt.datetime.now() + dt.timedelta(hours=5)
-            self.eventHandler.addEvent((delivery, user.mailTarget, 'userMsg', text, np.nan))
+            self.eventHandler.addEvent((delivery, user.mailTarget, 'userMsg', text, (0,0)))
             msg = "Message will be sent! *HONK*"
             state = st.default
         if state is st.cancelMessage:
