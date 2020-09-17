@@ -3,10 +3,6 @@ Date;Time;UserID;Type;Message;Recurring
 5-15-2020;19-00;774796474;img;assets/img/geese/;3-8
 5-16-2020;03-00;1011230417;msg;Goodnight! I hope you had a good day.;0-0
 Date;Time;UserID;Type;Content;Recurring
-9-12-2020;22-50;1011230417;msg;OMG I missed you so much Jenni! But I am back and able to communicate with you. HONKKKK!! Even though you are all the way in Seattle, I will still get messages to Maeve, don’t you worry!!!;0-0
-9-12-2020;22-51;1011230417;msg;*drops small flower at feet*;0-0
-9-13-2020;17-08;1011230417;img;assets/img/geese/;4-8
-9-13-2020;23-00;1011230417;msg;Don’t forget to take your meds Goosling!;2-2
-9-14-2020;15-00;1011230417;msg;Have some water mouse!;2-2
-9-14-2020;23-00;1011230417;msg;HONNNNK make sure you take your meds;2-2
-9-15-2020;15-00;1011230417;msg;A water lesbian wants you to drink your water… what are you going to do about it?;2-2
+9-17-2020;17-08;1011230417;img;assets/img/geese/;4-8
+9-17-2020;23-00;1011230417;msg;assets/messages/init/botmsg/meds/;1-1
+9-17-2020;15-00;1011230417;msg;assets/messages/init/botmsg/water/;1-1
