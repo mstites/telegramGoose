@@ -34,6 +34,8 @@ class Event:
         elif os.path.isdir(self.content): # load random file in dir
             sel = random.choice(os.listdir(self.content))
             self.content = self.content + sel
+        if self.action == "msg" and os.path.isfile(self.content): # open content
+            self.content = tools.ofile(self.content)
 
 class EventDF:
     def __init__(self, loc, eventsLoc):
